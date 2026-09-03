@@ -40,18 +40,36 @@ class AnalyticsDemoSeeder extends Seeder
                 ]);
 
                 $this->event($sessionId, $visitorId, $source, EventType::Visit, $createdAt);
-                if ($i <= 48) $this->event($sessionId, $visitorId, $source, EventType::Engagement, $createdAt->addSeconds(15));
-                if ($i <= 38) $this->event($sessionId, $visitorId, $source, EventType::Intent, $createdAt->addSeconds(30), ['zone' => 'hero', 'action' => 'scroll']);
-                if ($scroll >= 25) $this->event($sessionId, $visitorId, $source, EventType::Scroll, $createdAt->addSeconds(40), ['depth' => $scroll]);
-                if ($i <= 42) $this->event($sessionId, $visitorId, $source, EventType::SectionView, $createdAt->addSeconds(35), ['section' => 'pricing']);
+                if ($i <= 48) {
+                    $this->event($sessionId, $visitorId, $source, EventType::Engagement, $createdAt->addSeconds(15));
+                }
+                if ($i <= 38) {
+                    $this->event($sessionId, $visitorId, $source, EventType::Intent, $createdAt->addSeconds(30), ['zone' => 'hero', 'action' => 'scroll']);
+                }
+                if ($scroll >= 25) {
+                    $this->event($sessionId, $visitorId, $source, EventType::Scroll, $createdAt->addSeconds(40), ['depth' => $scroll]);
+                }
+                if ($i <= 42) {
+                    $this->event($sessionId, $visitorId, $source, EventType::SectionView, $createdAt->addSeconds(35), ['section' => 'pricing']);
+                }
 
                 if (config('analytics.mode') === 'ctwa') {
-                    if ($i <= (20 + $sourceIndex * 5)) $this->event($sessionId, $visitorId, $source, EventType::WhatsappLead, $createdAt->addMinute(), ['zone' => 'pricing', 'action' => 'whatsapp']);
-                    if ($i <= 7) $this->event($sessionId, $visitorId, $source, EventType::DirectCheckout, $createdAt->addMinute(), ['zone' => 'pricing', 'action' => 'external_checkout']);
+                    if ($i <= (20 + $sourceIndex * 5)) {
+                        $this->event($sessionId, $visitorId, $source, EventType::WhatsappLead, $createdAt->addMinute(), ['zone' => 'pricing', 'action' => 'whatsapp']);
+                    }
+                    if ($i <= 7) {
+                        $this->event($sessionId, $visitorId, $source, EventType::DirectCheckout, $createdAt->addMinute(), ['zone' => 'pricing', 'action' => 'external_checkout']);
+                    }
                 } else {
-                    if ($i <= 32) $this->event($sessionId, $visitorId, $source, EventType::FormStart, $createdAt->addSeconds(45));
-                    if ($i <= (18 + $sourceIndex * 4)) $this->event($sessionId, $visitorId, $source, EventType::Lead, $createdAt->addMinute());
-                    if ($i <= (9 + $sourceIndex * 3) && config('analytics.payment_mode') === 'internal') $this->event($sessionId, $visitorId, $source, EventType::Payment, $createdAt->addMinutes(2), ['status' => 'paid', 'amount' => 199000]);
+                    if ($i <= 32) {
+                        $this->event($sessionId, $visitorId, $source, EventType::FormStart, $createdAt->addSeconds(45));
+                    }
+                    if ($i <= (18 + $sourceIndex * 4)) {
+                        $this->event($sessionId, $visitorId, $source, EventType::Lead, $createdAt->addMinute());
+                    }
+                    if ($i <= (9 + $sourceIndex * 3) && config('analytics.payment_mode') === 'internal') {
+                        $this->event($sessionId, $visitorId, $source, EventType::Payment, $createdAt->addMinutes(2), ['status' => 'paid', 'amount' => 199000]);
+                    }
                 }
             }
         }

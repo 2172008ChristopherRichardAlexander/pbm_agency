@@ -12,10 +12,14 @@
 export function toSafeArray<T>(
     val: T[] | Record<string, T> | null | undefined,
 ): T[] {
-    if (Array.isArray(val)) return val;
+    if (Array.isArray(val)) {
+        return val;
+    }
+
     if (val !== null && val !== undefined && typeof val === 'object') {
         return Object.values(val);
     }
+
     return [];
 }
 
@@ -30,6 +34,7 @@ export function safeNumber(
     if (val === null || val === undefined || Number.isNaN(val)) {
         return fallback;
     }
+
     return val;
 }
 
@@ -53,9 +58,14 @@ export function formatNumber(num: number | null | undefined): string {
 /** Format seconds into a human-readable duration string. */
 export function formatDuration(seconds: number | null | undefined): string {
     const s = safeNumber(seconds);
-    if (s < 60) return `${Math.round(s)}s`;
+
+    if (s < 60) {
+        return `${Math.round(s)}s`;
+    }
+
     const mins = Math.floor(s / 60);
     const secs = Math.round(s % 60);
+
     return `${mins}m ${secs}s`;
 }
 

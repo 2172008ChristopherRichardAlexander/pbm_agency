@@ -13,7 +13,9 @@ class LabsController extends Controller
     public function index(Request $request, AbTestingService $labs): Response
     {
         $days = (int) $request->integer('range', 30);
-        if (! in_array($days, [7, 30, 90], true)) $days = 30;
+        if (! in_array($days, [7, 30, 90], true)) {
+            $days = 30;
+        }
         $to = CarbonImmutable::now()->endOfDay();
         $from = $to->subDays($days - 1)->startOfDay();
 

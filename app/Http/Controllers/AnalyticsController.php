@@ -47,7 +47,7 @@ class AnalyticsController extends Controller
             $output = fopen('php://output', 'wb');
             fputcsv($output, ['created_at', 'session_id', 'visitor_id', 'event_type', 'landing_source', 'event_data']);
             foreach ($rows as $row) {
-                fputcsv($output, [$row->created_at?->toIso8601String(), $row->session_id, $row->visitor_id, $row->event_type->value, $row->landing_source, json_encode($row->event_data)]);
+                fputcsv($output, [$row->created_at->toIso8601String(), $row->session_id, $row->visitor_id, $row->event_type->value, $row->landing_source, json_encode($row->event_data)]);
             }
             fclose($output);
         }, 'analytics.csv', ['Content-Type' => 'text/csv']);
@@ -57,7 +57,9 @@ class AnalyticsController extends Controller
     {
         $allowed = [7, 30, 90];
         $days = (int) $request->integer('range', 30);
-        if (! in_array($days, $allowed, true)) $days = 30;
+        if (! in_array($days, $allowed, true)) {
+            $days = 30;
+        }
         $to = CarbonImmutable::now()->endOfDay();
 
         return [$to->subDays($days - 1)->startOfDay(), $to, $days];

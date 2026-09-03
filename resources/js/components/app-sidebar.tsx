@@ -1,5 +1,11 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FlaskConical, FolderGit2, LineChart, ShoppingCart } from 'lucide-react';
+import {
+    BookOpen,
+    FlaskConical,
+    FolderGit2,
+    LineChart,
+    ShoppingCart,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -29,23 +35,34 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { auth, tracking } = usePage<{ auth: Auth; tracking: { mode: string } }>().props;
+    const { auth, tracking } = usePage<{
+        auth: Auth;
+        tracking: { mode: string };
+    }>().props;
     const isAdmin = auth.user?.role === 'admin';
 
     const mainNavItems: NavItem[] = [
         ...(isAdmin
             ? [
                   {
-                    title: 'Analytics',
-                    href: '/admin',
-                    icon: LineChart,
+                      title: 'Analytics',
+                      href: '/admin',
+                      icon: LineChart,
                   },
                   {
-                    title: 'A/B Labs',
-                    href: '/admin/labs',
-                    icon: FlaskConical,
+                      title: 'A/B Labs',
+                      href: '/admin/labs',
+                      icon: FlaskConical,
                   },
-                  ...(tracking.mode === 'form' ? [{ title: 'Orders', href: '/admin/orders', icon: ShoppingCart }] : []),
+                  ...(tracking.mode === 'form'
+                      ? [
+                            {
+                                title: 'Orders',
+                                href: '/admin/orders',
+                                icon: ShoppingCart,
+                            },
+                        ]
+                      : []),
               ]
             : []),
     ];

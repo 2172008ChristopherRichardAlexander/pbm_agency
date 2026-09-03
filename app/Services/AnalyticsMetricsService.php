@@ -51,7 +51,9 @@ class AnalyticsMetricsService
     public function leadSessionIds(CarbonImmutable $from, CarbonImmutable $to, ?string $landingSource = null): array
     {
         $query = UserAnalytic::query()->whereBetween('created_at', [$from, $to]);
-        if ($landingSource !== null) $query->where('landing_source', $landingSource);
+        if ($landingSource !== null) {
+            $query->where('landing_source', $landingSource);
+        }
 
         if (config('analytics.mode') === 'ctwa') {
             $query->whereIn('event_type', [EventType::WhatsappLead, EventType::DirectCheckout]);
@@ -77,7 +79,10 @@ class AnalyticsMetricsService
             ->orderBy('date')
             ->get()->groupBy('date')->map(function ($rows, $date) {
                 $item = ['date' => $date];
-                foreach ($rows as $row) $item[$row->event_type->value] = (int) $row->total;
+                foreach ($rows as $row) {
+                    $item[$row->event_type->value] = (int) $row->total;
+                }
+
                 return $item;
             })->values()->all();
     }

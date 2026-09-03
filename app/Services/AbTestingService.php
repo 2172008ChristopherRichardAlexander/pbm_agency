@@ -10,8 +10,6 @@ use Illuminate\Support\Collection;
 
 class AbTestingService
 {
-    public function __construct(private readonly AnalyticsMetricsService $metrics) {}
-
     public function report(CarbonImmutable $from, CarbonImmutable $to): array
     {
         $events = UserAnalytic::query()->whereBetween('created_at', [$from, $to])->get();
@@ -87,7 +85,7 @@ class AbTestingService
             if (config('analytics.mode') === 'ctwa') {
                 foreach ([EventType::DirectCheckout, EventType::WhatsappLead] as $branch) {
                     $ids = $rows->where('event_type', $branch)->pluck('session_id')->unique();
-                    $values[] = ['event' => $branch->value, 'label' => $branch->label(), 'value' => ($eligible ?? collect())->intersect($ids)->count()];
+                    $values[] = ['event' => $branch->value, 'label' => $branch->label(), 'value' => $eligible->intersect($ids)->count()];
                 }
             }
 
@@ -104,6 +102,7 @@ class AbTestingService
         return $sessions->groupBy(fn ($session) => ($session->landing_source ?: '/').'|'.($session->device_type ?: 'unknown'))
             ->map(function ($rows) use ($leadIds) {
                 $first = $rows->first();
+
                 return [
                     'source' => $first->landing_source ?: '/',
                     'device' => $first->device_type ?: 'unknown',
@@ -118,6 +117,7 @@ class AbTestingService
         return $events->whereNotNull('cta_zone')->groupBy(fn ($row) => $row->landing_source.'|'.$row->cta_zone.'|'.$row->cta_action)
             ->map(function ($rows) {
                 $first = $rows->first();
+
                 return ['source' => $first->landing_source, 'zone' => $first->cta_zone, 'action' => $first->cta_action, 'clicks' => $rows->count(), 'sessions' => $rows->pluck('session_id')->unique()->count()];
             })->values()->all();
     }
@@ -130,6 +130,7 @@ class AbTestingService
                 $persona = $row->max_scroll_depth >= 75 ? 'Deep Reader' : (($row->duration_seconds >= 30 || $row->max_scroll_depth >= 50) ? 'Engaged Reader' : 'Skimmer');
                 $personas[$persona]++;
             }
+
             return ['source' => $source ?: '/', 'segments' => $personas];
         })->values()->all();
     }
@@ -137,13 +138,21 @@ class AbTestingService
     private function scrollHeatmap(Collection $events): array
     {
         return $events->where('event_type', EventType::Scroll)->groupBy(fn ($row) => $row->landing_source.'|'.$row->scroll_depth)
-            ->map(function ($rows) { $first = $rows->first(); return ['source' => $first->landing_source, 'depth' => $first->scroll_depth, 'sessions' => $rows->pluck('session_id')->unique()->count()]; })->values()->all();
+            ->map(function ($rows) {
+                $first = $rows->first();
+
+                return ['source' => $first->landing_source, 'depth' => $first->scroll_depth, 'sessions' => $rows->pluck('session_id')->unique()->count()];
+            })->values()->all();
     }
 
     private function sectionHeatmap(Collection $events): array
     {
         return $events->where('event_type', EventType::SectionView)->groupBy(fn ($row) => $row->landing_source.'|'.$row->section_id)
-            ->map(function ($rows) { $first = $rows->sortBy('created_at')->first(); return ['source' => $first->landing_source, 'section' => $first->section_id, 'sessions' => $rows->pluck('session_id')->unique()->count(), 'first_seen' => $first->created_at?->toIso8601String()]; })
+            ->map(function ($rows) {
+                $first = $rows->sortBy('created_at')->first();
+
+                return ['source' => $first->landing_source, 'section' => $first->section_id, 'sessions' => $rows->pluck('session_id')->unique()->count(), 'first_seen' => $first->created_at?->toIso8601String()];
+            })
             ->sortBy('first_seen')->values()->all();
     }
 }

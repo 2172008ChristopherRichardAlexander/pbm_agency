@@ -13,8 +13,22 @@ export const EVENT_TYPES = {
 
 export type EventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES];
 export type ProjectMode = 'ctwa' | 'form';
-export type CtaZone = 'hero' | 'pricing' | 'sticky' | 'floating' | 'footer' | 'midpage' | 'faq' | 'nav';
-export type CtaAction = 'whatsapp' | 'external_checkout' | 'form_anchor' | 'internal_checkout' | 'scroll' | 'link';
+export type CtaZone =
+    | 'hero'
+    | 'pricing'
+    | 'sticky'
+    | 'floating'
+    | 'footer'
+    | 'midpage'
+    | 'faq'
+    | 'nav';
+export type CtaAction =
+    | 'whatsapp'
+    | 'external_checkout'
+    | 'form_anchor'
+    | 'internal_checkout'
+    | 'scroll'
+    | 'link';
 
 const criticalEvents = new Set<EventType>([
     EVENT_TYPES.whatsappLead,
@@ -26,8 +40,17 @@ export function isCriticalEvent(event: EventType): boolean {
     return criticalEvents.has(event);
 }
 
-export function resolveCtaEvent(mode: ProjectMode, action: CtaAction): EventType {
-    if (mode === 'ctwa' && action === 'whatsapp') return EVENT_TYPES.whatsappLead;
-    if (mode === 'ctwa' && action === 'external_checkout') return EVENT_TYPES.directCheckout;
+export function resolveCtaEvent(
+    mode: ProjectMode,
+    action: CtaAction,
+): EventType {
+    if (mode === 'ctwa' && action === 'whatsapp') {
+        return EVENT_TYPES.whatsappLead;
+    }
+
+    if (mode === 'ctwa' && action === 'external_checkout') {
+        return EVENT_TYPES.directCheckout;
+    }
+
     return EVENT_TYPES.intent;
 }

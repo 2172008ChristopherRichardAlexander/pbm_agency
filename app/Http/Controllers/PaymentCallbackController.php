@@ -21,15 +21,22 @@ class PaymentCallbackController extends Controller
             $result = $duitku->verifyCallback($request);
         } catch (InvalidArgumentException $exception) {
             Log::warning('Duitku callback signature rejected.', ['order_number' => $request->input('merchantOrderId')]);
+
             return response()->json(['message' => $exception->getMessage()], 400);
         }
 
         try {
             $outcome = DB::transaction(function () use ($request, $result, $tracking): string {
                 $order = Order::query()->where('order_number', $result['order_number'])->lockForUpdate()->first();
-                if (! $order) return 'missing';
-                if ($order->isPaid()) return 'duplicate';
-                if ($result['amount'] !== $order->amount) throw new InvalidArgumentException('Callback amount does not match the order.');
+                if (! $order) {
+                    return 'missing';
+                }
+                if ($order->isPaid()) {
+                    return 'duplicate';
+                }
+                if ($result['amount'] !== $order->amount) {
+                    throw new InvalidArgumentException('Callback amount does not match the order.');
+                }
 
                 if ($result['status'] === 'paid') {
                     $order->update([
@@ -47,19 +54,23 @@ class PaymentCallbackController extends Controller
                         'currency' => 'IDR',
                         'landing_source' => $order->landing_source,
                     ], ['email' => $order->email, 'phone' => $order->phone, 'product_name' => config('analytics.product_name')], $order->session_id, $order->visitor_id);
+
                     return 'paid';
                 }
 
                 $order->update(['status' => $result['status'], 'callback_payload' => $result['payload']]);
+
                 return $result['status'];
             });
 
             return response()->json(['message' => $outcome === 'duplicate' ? 'Already processed' : 'OK']);
         } catch (InvalidArgumentException $exception) {
             Log::warning('Duitku callback rejected.', ['order_number' => $result['order_number'], 'reason' => $exception->getMessage()]);
+
             return response()->json(['message' => $exception->getMessage()], 400);
         } catch (Throwable $exception) {
             Log::warning('Duitku callback could not be processed.', ['order_number' => $result['order_number']]);
+
             return response()->json(['message' => 'Unable to process callback.'], 500);
         }
     }

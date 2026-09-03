@@ -11,6 +11,7 @@ function callbackPayload(Order $order, array $overrides = []): array
     $merchant = 'TEST-MERCHANT';
     $amount = (string) $order->amount;
     $key = 'test-api-key';
+
     return [...[
         'merchantCode' => $merchant,
         'amount' => $amount,

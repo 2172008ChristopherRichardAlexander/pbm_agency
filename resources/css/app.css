@@ -3,8 +3,14 @@
 
 /* Prevent fonts from blocking initial render */
 @layer base {
-    @font-face { font-family: 'Instrument Sans'; font-display: swap; }
-    @font-face { font-family: 'Space Grotesk'; font-display: swap; }
+    @font-face {
+        font-family: 'Instrument Sans';
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'Space Grotesk';
+        font-display: swap;
+    }
 }
 
 @source '../views';
@@ -24,9 +30,7 @@
 
     /* Upgrades font-mono app-wide (currently used for data/labels on the
        landing page and in the admin analytics tables). */
-        --font-mono:
-        ui-monospace, SFMono-Regular, Menlo, Consolas,
-        monospace;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -180,27 +184,26 @@
 /* Maps standard Tailwind CSS vars to lp-* values so all mini-audit
    components automatically render in the dark tech color system          */
 .mini-audit-page {
-    --background:          var(--lp-bg);
-    --foreground:          var(--lp-text);
-    --card:                var(--lp-bg-elevated);
-    --card-foreground:     var(--lp-text);
-    --popover:             var(--lp-bg-elevated);
-    --popover-foreground:  var(--lp-text);
-    --primary:             var(--lp-primary);
-    --primary-foreground:  var(--lp-bg);
-    --secondary:           var(--lp-bg-elevated-2);
-    --secondary-foreground:var(--lp-text);
-    --muted:               var(--lp-bg-elevated);
-    --muted-foreground:    var(--lp-text-muted);
-    --accent:              var(--lp-bg-elevated-2);
-    --accent-foreground:   var(--lp-text);
-    --destructive:         var(--lp-danger);
+    --background: var(--lp-bg);
+    --foreground: var(--lp-text);
+    --card: var(--lp-bg-elevated);
+    --card-foreground: var(--lp-text);
+    --popover: var(--lp-bg-elevated);
+    --popover-foreground: var(--lp-text);
+    --primary: var(--lp-primary);
+    --primary-foreground: var(--lp-bg);
+    --secondary: var(--lp-bg-elevated-2);
+    --secondary-foreground: var(--lp-text);
+    --muted: var(--lp-bg-elevated);
+    --muted-foreground: var(--lp-text-muted);
+    --accent: var(--lp-bg-elevated-2);
+    --accent-foreground: var(--lp-text);
+    --destructive: var(--lp-danger);
     --destructive-foreground: var(--lp-text);
-    --border:              var(--lp-border-soft);
-    --input:               var(--lp-bg-elevated);
-    --ring:                var(--lp-primary);
+    --border: var(--lp-border-soft);
+    --input: var(--lp-bg-elevated);
+    --ring: var(--lp-primary);
 }
-
 
 @utility bg-lp-grid {
     background-image:
@@ -513,7 +516,8 @@
 }
 
 @keyframes bounce-slow {
-    0%, 100% {
+    0%,
+    100% {
         transform: translateY(-5%);
         animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
     }

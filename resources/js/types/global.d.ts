@@ -1,11 +1,12 @@
-import type { Auth } from '@/types/auth';
+import type { EventType } from '@/analytics/event-types';
 import type { TrackingProps } from '@/types/analytics';
+import type { Auth } from '@/types/auth';
 
 declare global {
     interface Window {
         fbq?: (...args: unknown[]) => void;
         __META_PAGE_VIEW_EVENT_ID?: string;
-        __PBM_META_EVENTS?: Partial<Record<import('@/analytics/event-types').EventType, string>>;
+        __PBM_META_EVENTS?: Partial<Record<EventType, string>>;
         dataLayer?: Record<string, unknown>[];
     }
 }

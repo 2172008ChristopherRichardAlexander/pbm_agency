@@ -23,19 +23,25 @@ class SendMetaCapiEvent implements ShouldQueue
 
     public function handle(MetaConversionService $meta): void
     {
-        if (! $meta->enabled()) return;
+        if (! $meta->enabled()) {
+            return;
+        }
 
         try {
             $response = $meta->send($this->eventName, $this->eventId, $this->data, $this->context);
             $this->log('sent', $response?->status(), $response?->json());
         } catch (Throwable $exception) {
             $this->log('failed', null, null, mb_substr($exception->getMessage(), 0, 4000));
+
+            throw $exception;
         }
     }
 
     private function log(string $status, ?int $httpStatus, ?array $response, ?string $error = null): void
     {
-        if (! config('meta.log_enabled')) return;
+        if (! config('meta.log_enabled')) {
+            return;
+        }
 
         DB::table('meta_capi_logs')->insert([
             'event_id' => $this->eventId,

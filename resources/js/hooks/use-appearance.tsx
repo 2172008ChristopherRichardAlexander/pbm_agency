@@ -30,11 +30,17 @@ const setCookie = (name: string, value: string, days = 365): void => {
 };
 
 const getStoredAppearance = (): Appearance => {
-    return 'dark';
+    if (typeof window === 'undefined') {
+        return 'system';
+    }
+
+    const stored = localStorage.getItem('appearance');
+
+    return stored === 'light' || stored === 'dark' ? stored : 'system';
 };
 
 const isDarkMode = (appearance: Appearance): boolean => {
-    return true;
+    return appearance === 'dark' || (appearance === 'system' && prefersDark());
 };
 
 const applyTheme = (appearance: Appearance): void => {
@@ -71,11 +77,10 @@ export function initializeTheme(): void {
         return;
     }
 
-    localStorage.setItem('appearance', 'dark');
-    setCookie('appearance', 'dark');
+    currentAppearance = getStoredAppearance();
+    applyTheme(currentAppearance);
 
-    currentAppearance = 'dark';
-    applyTheme('dark');
+    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
 export function useAppearance(): UseAppearanceReturn {
@@ -90,7 +95,6 @@ export function useAppearance(): UseAppearanceReturn {
         : 'light';
 
     const updateAppearance = (mode: Appearance): void => {
-        mode = 'dark'; // Force dark mode
         currentAppearance = mode;
 
         // Store in localStorage for client-side persistence...

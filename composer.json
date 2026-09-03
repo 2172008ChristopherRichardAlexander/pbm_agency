@@ -1,17 +1,18 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "pbmagency/boilerplate-lp",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Reusable Laravel and Inertia landing-page boilerplate for PBM Agency.",
     "keywords": [
         "laravel",
-        "framework"
+        "framework",
+        "landing-page",
+        "analytics"
     ],
     "license": "MIT",
     "require": {
         "php": "^8.3",
         "duitkupg/duitku-php": "dev-master",
-        "facebook/php-business-sdk": "26.0.1",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.17",

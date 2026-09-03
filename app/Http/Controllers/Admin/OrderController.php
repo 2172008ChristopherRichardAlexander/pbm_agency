@@ -30,16 +30,22 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order, TrackingService $tracking): JsonResponse
     {
         $validated = $request->validate(['status' => ['required', Rule::in(['pending', 'paid', 'failed'])]]);
-        if ($validated['status'] === 'paid') return $this->markAsPaid($request, $order, $tracking);
+        if ($validated['status'] === 'paid') {
+            return $this->markAsPaid($request, $order, $tracking);
+        }
         $order->update(['status' => $validated['status']]);
+
         return response()->json(['success' => true]);
     }
 
     public function markAsPaid(Request $request, Order $order, TrackingService $tracking): JsonResponse
     {
-        if ($order->isPaid()) return response()->json(['success' => true, 'message' => 'Already paid']);
+        if ($order->isPaid()) {
+            return response()->json(['success' => true, 'message' => 'Already paid']);
+        }
         $order->update(['status' => 'paid', 'paid_at' => now()]);
         $tracking->track($request, EventType::Payment, ['event_id' => 'payment-'.$order->order_number, 'order_number' => $order->order_number, 'status' => 'paid', 'amount' => $order->amount, 'currency' => 'IDR', 'landing_source' => $order->landing_source], ['email' => $order->email, 'phone' => $order->phone], $order->session_id, $order->visitor_id);
+
         return response()->json(['success' => true]);
     }
 }

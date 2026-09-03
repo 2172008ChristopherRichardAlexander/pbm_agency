@@ -14,7 +14,9 @@ class MetaConversionService
 
     public function send(string $eventName, string $eventId, array $data, array $context): ?Response
     {
-        if (! $this->enabled()) return null;
+        if (! $this->enabled()) {
+            return null;
+        }
 
         $userData = array_filter([
             'client_ip_address' => $context['ip'] ?? null,
@@ -42,7 +44,9 @@ class MetaConversionService
             'custom_data' => $customData,
         ]]];
 
-        if (filled(config('meta.test_event_code'))) $payload['test_event_code'] = config('meta.test_event_code');
+        if (filled(config('meta.test_event_code'))) {
+            $payload['test_event_code'] = config('meta.test_event_code');
+        }
 
         return Http::asJson()
             ->timeout(10)

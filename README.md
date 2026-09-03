@@ -25,6 +25,7 @@ Gunakan Node.js 22.13+ dan PHP 8.3+. Worker queue wajib berjalan karena Meta CAP
 - [Deployment](docs/09-deployment.md)
 - [Catatan migrasi](docs/10-migration-notes.md)
 - [QA checklist](docs/11-qa-checklist.md)
+- [Laporan QA implementasi](docs/QA-REPORT.md)
 - [Extraction notes](docs/EXTRACTION-NOTES.md)
 - [Keputusan teknis](docs/DECISIONS.md)
 

@@ -2,14 +2,12 @@ import { createInertiaApp } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { initializeTheme } from '@/hooks/use-appearance';
 import { AnalyticsBootstrap } from '@/hooks/use-analytics';
+import { initializeTheme } from '@/hooks/use-appearance';
 
-// We use lazy() here so the heavy dashboard NEVER loads on the landing page!
-const AppLayout = lazy(() => import('@/layouts/app-layout'));
 const AuthLayout = lazy(() => import('@/layouts/auth-layout'));
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'PBM Landing Page';
 
 createInertiaApp({
     title: (title) => (title ? `${title}` : appName),

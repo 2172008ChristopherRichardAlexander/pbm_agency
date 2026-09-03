@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import type { AnchorHTMLAttributes, MouseEvent, ReactNode } from 'react';
-import { resolveCtaEvent, type CtaAction, type CtaZone } from '@/analytics/event-types';
+import { resolveCtaEvent } from '@/analytics/event-types';
+import type { CtaAction, CtaZone } from '@/analytics/event-types';
 import { track } from '@/analytics/tracker';
 import type { TrackingProps } from '@/types/analytics';
 
@@ -12,7 +13,14 @@ type Props = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'onClick'> & {
     onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
 };
 
-export function TrackedCTA({ zone, action, label, children, onClick, ...props }: Props) {
+export function TrackedCTA({
+    zone,
+    action,
+    label,
+    children,
+    onClick,
+    ...props
+}: Props) {
     const tracking = usePage().props.tracking as TrackingProps;
 
     const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -20,8 +28,13 @@ export function TrackedCTA({ zone, action, label, children, onClick, ...props }:
             const eventType = resolveCtaEvent(tracking.mode, action);
             void track(eventType, { zone, action, cta_label: label });
         }
+
         onClick?.(event);
     };
 
-    return <a {...props} onClick={handleClick}>{children}</a>;
+    return (
+        <a {...props} onClick={handleClick}>
+            {children}
+        </a>
+    );
 }

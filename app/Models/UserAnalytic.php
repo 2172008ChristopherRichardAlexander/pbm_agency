@@ -5,6 +5,10 @@ namespace App\Models;
 use App\Analytics\EventType;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property EventType $event_type
+ * @property int|string $total
+ */
 class UserAnalytic extends Model
 {
     public const UPDATED_AT = null;

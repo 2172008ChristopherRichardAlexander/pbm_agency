@@ -21,8 +21,9 @@ jobs:
       - run: composer install --no-interaction --prefer-dist
       - run: npm ci
       - run: cp .env.example .env && php artisan key:generate
-      - run: php artisan test
-      - run: npm run lint:check && npm run types:check && npm run build
+      - run: composer validate --strict
+      - run: composer ci:check
+      - run: npm run build
       - run: tar --exclude=.git --exclude=.env --exclude=node_modules --exclude=vendor --exclude=storage/logs -czf release.tar.gz .
       - uses: actions/upload-artifact@v4
         with:

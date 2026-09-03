@@ -26,9 +26,9 @@ return [
     'retention_days' => min(90, max(1, (int) env('ANALYTICS_RETENTION_DAYS', 90))),
     'primary_metric' => $mode === 'form' ? EventType::Lead->value : 'total_lead',
     'capabilities' => [
-        'payment' => $mode === 'form' && $paymentMode === 'internal',
+        EventType::Payment->value => $mode === 'form' && $paymentMode === 'internal',
         'revenue' => $mode === 'form' && $paymentMode === 'internal',
         'total_lead' => $mode === 'ctwa',
-        'section_view' => (bool) env('ANALYTICS_SECTION_VIEW_ENABLED', true),
+        EventType::SectionView->value => (bool) env('ANALYTICS_SECTION_VIEW_ENABLED', true),
     ],
 ];

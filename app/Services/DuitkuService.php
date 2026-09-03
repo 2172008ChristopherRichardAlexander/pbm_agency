@@ -30,7 +30,9 @@ class DuitkuService
         ], $this->client());
 
         $data = json_decode($response, true);
-        if (! is_array($data) || empty($data['paymentUrl'])) throw new RuntimeException('Duitku did not return a payment URL.');
+        if (! is_array($data) || empty($data['paymentUrl'])) {
+            throw new RuntimeException('Duitku did not return a payment URL.');
+        }
 
         return (string) $data['paymentUrl'];
     }
@@ -43,11 +45,17 @@ class DuitkuService
         $signature = (string) $request->input('signature');
         $expected = md5($merchantCode.$amount.$orderNumber.(string) config('duitku.api_key'));
 
-        if (! hash_equals((string) config('duitku.merchant_code'), $merchantCode)) throw new InvalidArgumentException('Invalid Duitku merchant code.');
-        if (! hash_equals($expected, $signature)) throw new InvalidArgumentException('Invalid Duitku signature.');
+        if (! hash_equals((string) config('duitku.merchant_code'), $merchantCode)) {
+            throw new InvalidArgumentException('Invalid Duitku merchant code.');
+        }
+        if (! hash_equals($expected, $signature)) {
+            throw new InvalidArgumentException('Invalid Duitku signature.');
+        }
 
         return [
-            'status' => match ((string) $request->input('resultCode')) { '00' => 'paid', '01' => 'failed', default => 'pending' },
+            'status' => match ((string) $request->input('resultCode')) {
+                '00' => 'paid', '01' => 'failed', default => 'pending'
+            },
             'order_number' => $orderNumber,
             'amount' => (int) $amount,
             'reference' => (string) $request->input('reference', ''),

@@ -22,7 +22,9 @@ final class MetaEventMapper
     {
         $map = [];
         foreach (EventType::forMode($mode) as $event) {
-            if ($metaEvent = $this->map($event)) $map[$event->value] = $metaEvent;
+            if ($metaEvent = $this->map($event)) {
+                $map[$event->value] = $metaEvent;
+            }
         }
 
         return $map;

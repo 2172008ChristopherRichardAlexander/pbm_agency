@@ -1,7 +1,6 @@
 <?php
 
 use App\Analytics\EventType;
-use App\Models\AnalyticsSession;
 use App\Models\User;
 use App\Models\UserAnalytic;
 use App\Services\AbTestingService;
@@ -36,7 +35,9 @@ test('ctwa total lead counts a session once across both lead actions', function 
 
 test('split funnel is hierarchical', function () {
     config()->set('analytics.mode', 'ctwa');
-    foreach (['one', 'two'] as $session) dashboardEvent($session, EventType::Visit);
+    foreach (['one', 'two'] as $session) {
+        dashboardEvent($session, EventType::Visit);
+    }
     dashboardEvent('one', EventType::Engagement);
     dashboardEvent('two', EventType::Intent);
     dashboardEvent('two', EventType::WhatsappLead);

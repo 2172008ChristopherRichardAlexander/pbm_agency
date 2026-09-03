@@ -5,6 +5,7 @@ namespace App\Analytics;
 use App\Jobs\SendMetaCapiEvent;
 use App\Models\AnalyticsSession;
 use App\Models\UserAnalytic;
+use App\Services\MetaConversionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -21,8 +22,7 @@ final class TrackingService
         array $metaData = [],
         ?string $sessionId = null,
         ?string $visitorId = null,
-    ): ?UserAnalytic
-    {
+    ): ?UserAnalytic {
         if (! config('analytics.enabled')) {
             return null;
         }
@@ -68,7 +68,7 @@ final class TrackingService
 
         $analytic = UserAnalytic::query()->create($attributes);
         $metaEvent = app(MetaEventMapper::class)->map($event);
-        if ($metaEvent && app(\App\Services\MetaConversionService::class)->enabled()) {
+        if ($metaEvent && app(MetaConversionService::class)->enabled()) {
             SendMetaCapiEvent::dispatch($metaEvent, (string) $data['event_id'], [...$data, ...$metaData], [
                 'url' => $request->fullUrl(),
                 'ip' => $request->ip(),
