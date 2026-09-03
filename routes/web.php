@@ -10,7 +10,19 @@ use App\Http\Controllers\PaymentCallbackController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::inertia('/', 'home')->name('home');
+Route::get('/', function () {
+    $mode = (string) config('analytics.mode');
+    $number = preg_replace('/\D+/', '', (string) config('analytics.whatsapp_number'));
+    $whatsappUrl = $number ? 'https://wa.me/'.$number.'?text='.urlencode((string) config('analytics.whatsapp_default_message')) : '#pricing';
+
+    return Inertia::render("demo/{$mode}", [
+        'whatsappUrl' => $whatsappUrl,
+        'externalCheckoutUrl' => config('analytics.external_checkout_url'),
+        'paymentMode' => config('analytics.payment_mode'),
+        'productName' => config('analytics.product_name'),
+        'productPrice' => config('analytics.product_price'),
+    ]);
+})->name('home');
 
 Route::middleware('throttle:120,1')->group(function () {
     Route::post('/analytics/track', [AnalyticsController::class, 'track'])->name('analytics.track');
@@ -22,6 +34,8 @@ if (config('analytics.mode') === 'form') {
     Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:20,1')->name('checkout.store');
     Route::get('/payment/return', [CheckoutController::class, 'returnPage'])->name('payment.return');
     Route::post('/payment/callback', [PaymentCallbackController::class, 'handle'])->name('payment.callback');
+    $thankYouPath = '/'.ltrim((string) config('analytics.thank_you_path'), '/');
+    Route::inertia($thankYouPath, 'demo/thank-you')->name('thank-you');
 }
 
 Route::middleware('auth')->group(function () {

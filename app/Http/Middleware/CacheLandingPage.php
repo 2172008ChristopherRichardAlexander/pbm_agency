@@ -24,7 +24,7 @@ class CacheLandingPage
         }
 
         $pathKey = str_replace('/', '_', $request->path());
-        $cacheKey = "landing_page_html_{$pathKey}:".self::manifestVersion();
+        $cacheKey = 'landing_page_html_'.config('analytics.mode')."_{$pathKey}:".self::manifestVersion();
 
         if (Cache::has($cacheKey)) {
             /** @var string $html */
