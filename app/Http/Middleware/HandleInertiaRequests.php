@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Analytics\EventType;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -42,6 +43,16 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'tracking' => [
+                'enabled' => config('analytics.enabled'),
+                'mode' => config('analytics.mode'),
+                'visitorId' => $request->attributes->get('pbm_visitor_id'),
+                'eventLabels' => EventType::labelsFor((string) config('analytics.mode')),
+                'capabilities' => config('analytics.capabilities'),
+                'engagementThreshold' => config('analytics.engagement_threshold'),
+                'heartbeatInterval' => config('analytics.heartbeat_interval'),
+                'sectionViewEnabled' => config('analytics.section_view_enabled'),
+            ],
         ];
     }
 }

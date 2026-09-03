@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\AttachVisitorCookie;
 use App\Http\Middleware\CacheLandingPage;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [
+            AttachVisitorCookie::class,
             CacheLandingPage::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
