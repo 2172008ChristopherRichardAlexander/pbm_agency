@@ -28,6 +28,9 @@
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="PROJECT_MODE" value="form"/>
+        <env name="PAYMENT_MODE" value="internal"/>
+        <env name="PRODUCT_PRICE" value="199000"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>

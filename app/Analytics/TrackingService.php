@@ -14,7 +14,14 @@ final class TrackingService
 {
     public function __construct(private readonly SessionResolver $sessions) {}
 
-    public function track(Request $request, EventType $event, array $eventData = []): ?UserAnalytic
+    public function track(
+        Request $request,
+        EventType $event,
+        array $eventData = [],
+        array $metaData = [],
+        ?string $sessionId = null,
+        ?string $visitorId = null,
+    ): ?UserAnalytic
     {
         if (! config('analytics.enabled')) {
             return null;
@@ -23,7 +30,7 @@ final class TrackingService
         $data = $this->sanitizeEventData($eventData);
         $data['event_id'] ??= (string) Str::uuid();
         $data['client_id'] = Str::limit((string) config('analytics.client_id'), 255, '');
-        $session = $this->touchSession($request, $event, $data);
+        $session = $this->touchSession($request, $event, $data, $sessionId, $visitorId);
         $eventId = Arr::get($data, 'event_id');
 
         if (is_string($eventId) && UserAnalytic::query()->where('event_data->event_id', $eventId)->exists()) {
@@ -62,7 +69,7 @@ final class TrackingService
         $analytic = UserAnalytic::query()->create($attributes);
         $metaEvent = app(MetaEventMapper::class)->map($event);
         if ($metaEvent && app(\App\Services\MetaConversionService::class)->enabled()) {
-            SendMetaCapiEvent::dispatch($metaEvent, (string) $data['event_id'], $data, [
+            SendMetaCapiEvent::dispatch($metaEvent, (string) $data['event_id'], [...$data, ...$metaData], [
                 'url' => $request->fullUrl(),
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
@@ -88,9 +95,9 @@ final class TrackingService
         return $session;
     }
 
-    private function touchSession(Request $request, EventType $event, array $data): AnalyticsSession
+    private function touchSession(Request $request, EventType $event, array $data, ?string $sessionId = null, ?string $visitorId = null): AnalyticsSession
     {
-        $session = $this->baseSession($request, $data);
+        $session = $this->baseSession($request, $data, $sessionId, $visitorId);
         $depth = min(100, max(0, (int) ($data['depth'] ?? 0)));
         $session->max_scroll_depth = max((int) $session->max_scroll_depth, $depth);
 
@@ -106,10 +113,10 @@ final class TrackingService
         return $session;
     }
 
-    private function baseSession(Request $request, array $data): AnalyticsSession
+    private function baseSession(Request $request, array $data, ?string $sessionId = null, ?string $visitorId = null): AnalyticsSession
     {
-        $session = AnalyticsSession::query()->firstOrNew(['session_id' => $this->sessions->sessionId($request)]);
-        $session->visitor_id ??= $this->sessions->visitorId($request);
+        $session = AnalyticsSession::query()->firstOrNew(['session_id' => $sessionId ?: $this->sessions->sessionId($request)]);
+        $session->visitor_id ??= $visitorId ?: $this->sessions->visitorId($request);
         $session->landing_source ??= $this->externalString($data['landing_source'] ?? null, 255);
         $session->referral_source ??= $this->externalString($data['referral_source'] ?? $request->headers->get('referer'), 2048);
         $session->started_at ??= now();

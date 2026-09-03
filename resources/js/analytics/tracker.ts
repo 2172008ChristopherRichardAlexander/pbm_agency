@@ -57,6 +57,12 @@ export function track(eventType: EventType, data: EventData = {}): Promise<void>
     return Promise.resolve();
 }
 
+export function trackServerConfirmed(eventType: EventType, confirmedEventId: string, data: EventData = {}): void {
+    if (typeof window === 'undefined') return;
+    const payload = makePayload(eventType, { ...data, event_id: confirmedEventId });
+    pushDataLayer(eventType, data, payload);
+}
+
 export async function trackVisit(data: EventData = {}): Promise<boolean> {
     if (typeof window === 'undefined') return false;
     const payload = makePayload(EVENT_TYPES.visit, data);

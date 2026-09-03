@@ -16,6 +16,7 @@ export type EventData = {
 export type TrackingProps = {
     enabled: boolean;
     mode: ProjectMode;
+    paymentMode: 'none' | 'external' | 'internal';
     visitorId: string;
     eventLabels: Partial<Record<EventType, string>>;
     capabilities: Record<string, boolean>;

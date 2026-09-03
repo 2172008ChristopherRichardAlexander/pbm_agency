@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FlaskConical, FolderGit2, LineChart } from 'lucide-react';
+import { BookOpen, FlaskConical, FolderGit2, LineChart, ShoppingCart } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -29,7 +29,7 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { auth } = usePage<{ auth: Auth }>().props;
+    const { auth, tracking } = usePage<{ auth: Auth; tracking: { mode: string } }>().props;
     const isAdmin = auth.user?.role === 'admin';
 
     const mainNavItems: NavItem[] = [
@@ -45,6 +45,7 @@ export function AppSidebar() {
                     href: '/admin/labs',
                     icon: FlaskConical,
                   },
+                  ...(tracking.mode === 'form' ? [{ title: 'Orders', href: '/admin/orders', icon: ShoppingCart }] : []),
               ]
             : []),
     ];
