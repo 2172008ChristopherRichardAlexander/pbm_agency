@@ -20,6 +20,33 @@
         </script>
     @endif
 
+    @if ($gtmId = config('integrations.gtm_container_id'))
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':Date.now(),event:'gtm.js'});
+            var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+            j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer',@js($gtmId));
+        </script>
+    @elseif ($ga4Id = config('integrations.ga4_measurement_id'))
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ urlencode($ga4Id) }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments)}
+            gtag('js', new Date());
+            gtag('config', @js($ga4Id));
+        </script>
+    @endif
+
+    @if ($clarityId = config('integrations.clarity_project_id'))
+        <script>
+            (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src='https://www.clarity.ms/tag/'+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,'clarity','script',@js($clarityId));
+            const pbmLandingSource = sessionStorage.getItem('pbm_landing_source') || location.pathname;
+            clarity('set', 'landing_source', pbmLandingSource);
+            clarity('identify', @js(request()->attributes->get('pbm_visitor_id')));
+        </script>
+    @endif
+
     <script>
         (() => {
             const appearance = @js($appearance ?? 'system');
@@ -37,6 +64,9 @@
     </x-inertia::head>
 </head>
 <body class="font-sans antialiased">
+    @if ($gtmId = config('integrations.gtm_container_id'))
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ urlencode($gtmId) }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    @endif
     <x-inertia::app />
 </body>
 </html>
