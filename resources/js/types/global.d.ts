@@ -1,9 +1,11 @@
 import type { Auth } from '@/types/auth';
+import type { TrackingProps } from '@/types/analytics';
 
 declare global {
     interface Window {
         fbq?: (...args: unknown[]) => void;
         __META_PAGE_VIEW_EVENT_ID?: string;
+        dataLayer?: Record<string, unknown>[];
     }
 }
 
@@ -20,6 +22,7 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            tracking: TrackingProps;
             [key: string]: unknown;
         };
     }

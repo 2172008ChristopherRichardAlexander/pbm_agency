@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
+import { AnalyticsBootstrap } from '@/hooks/use-analytics';
 
 // We use lazy() here so the heavy dashboard NEVER loads on the landing page!
 const AppLayout = lazy(() => import('@/layouts/app-layout'));
@@ -26,6 +27,7 @@ createInertiaApp({
             <TooltipProvider delayDuration={0}>
                 {/* Suspense is required when using lazy() layout imports */}
                 <Suspense fallback={null}>{app}</Suspense>
+                <AnalyticsBootstrap />
                 <Toaster />
             </TooltipProvider>
         );
