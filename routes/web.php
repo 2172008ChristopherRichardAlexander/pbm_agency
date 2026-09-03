@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\HeartbeatController;
+use App\Http\Controllers\LabsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -17,5 +18,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::inertia('/', 'admin/placeholder')->name('analytics');
+    Route::get('/', [AnalyticsController::class, 'index'])->name('analytics');
+    Route::get('/export', [AnalyticsController::class, 'export'])->name('analytics.export');
+    Route::get('/labs', [LabsController::class, 'index'])->name('labs');
 });

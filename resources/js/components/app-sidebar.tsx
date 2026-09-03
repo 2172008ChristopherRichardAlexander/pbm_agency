@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LineChart } from 'lucide-react';
+import { BookOpen, FlaskConical, FolderGit2, LineChart } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -39,6 +39,11 @@ export function AppSidebar() {
                     title: 'Analytics',
                     href: '/admin',
                     icon: LineChart,
+                  },
+                  {
+                    title: 'A/B Labs',
+                    href: '/admin/labs',
+                    icon: FlaskConical,
                   },
               ]
             : []),
