@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Analytics\EventType;
+use App\Analytics\MetaEventMapper;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -52,6 +53,7 @@ class HandleInertiaRequests extends Middleware
                 'engagementThreshold' => config('analytics.engagement_threshold'),
                 'heartbeatInterval' => config('analytics.heartbeat_interval'),
                 'sectionViewEnabled' => config('analytics.section_view_enabled'),
+                'metaEvents' => app(MetaEventMapper::class)->forMode((string) config('analytics.mode')),
             ],
         ];
     }

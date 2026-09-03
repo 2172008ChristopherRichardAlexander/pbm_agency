@@ -19,9 +19,10 @@ export function landingSource(): string {
 }
 
 function makePayload(eventType: EventType, data: EventData): QueuedEvent {
+    const pageViewId = eventType === EVENT_TYPES.visit ? window.__META_PAGE_VIEW_EVENT_ID : undefined;
     return {
         event_type: eventType,
-        event_data: { ...data, event_id: data.event_id ?? eventId(), landing_source: data.landing_source ?? landingSource() },
+        event_data: { ...data, event_id: data.event_id ?? pageViewId ?? eventId(), landing_source: data.landing_source ?? landingSource() },
     };
 }
 
@@ -36,6 +37,12 @@ function pushDataLayer(eventType: EventType, data: EventData, payload: QueuedEve
         value: data.value,
         currency: data.currency,
     });
+
+    const metaEvent = window.__PBM_META_EVENTS?.[eventType];
+    if (metaEvent && window.fbq) {
+        const standardEvents = new Set(['PageView', 'ViewContent', 'InitiateCheckout', 'Lead', 'Purchase']);
+        window.fbq(standardEvents.has(metaEvent) ? 'track' : 'trackCustom', metaEvent, {}, { eventID: payload.event_data.event_id });
+    }
 }
 
 export function track(eventType: EventType, data: EventData = {}): Promise<void> {

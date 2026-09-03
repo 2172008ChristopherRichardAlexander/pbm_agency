@@ -2,6 +2,7 @@
 
 namespace App\Analytics;
 
+use App\Jobs\SendMetaCapiEvent;
 use App\Models\AnalyticsSession;
 use App\Models\UserAnalytic;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ final class TrackingService
         }
 
         $data = $this->sanitizeEventData($eventData);
+        $data['event_id'] ??= (string) Str::uuid();
         $data['client_id'] = Str::limit((string) config('analytics.client_id'), 255, '');
         $session = $this->touchSession($request, $event, $data);
         $eventId = Arr::get($data, 'event_id');
@@ -57,7 +59,20 @@ final class TrackingService
             ];
         }
 
-        return UserAnalytic::query()->create($attributes);
+        $analytic = UserAnalytic::query()->create($attributes);
+        $metaEvent = app(MetaEventMapper::class)->map($event);
+        if ($metaEvent && app(\App\Services\MetaConversionService::class)->enabled()) {
+            SendMetaCapiEvent::dispatch($metaEvent, (string) $data['event_id'], $data, [
+                'url' => $request->fullUrl(),
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'fbp' => $request->cookie('_fbp'),
+                'fbc' => $request->cookie('_fbc'),
+                'visitor_id' => $session->visitor_id,
+            ]);
+        }
+
+        return $analytic;
     }
 
     public function heartbeat(Request $request, int $durationSeconds, int $maxScrollDepth, ?string $landingSource): AnalyticsSession

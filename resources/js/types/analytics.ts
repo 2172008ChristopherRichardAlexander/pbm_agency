@@ -22,6 +22,7 @@ export type TrackingProps = {
     engagementThreshold: number;
     heartbeatInterval: number;
     sectionViewEnabled: boolean;
+    metaEvents: Partial<Record<EventType, string>>;
 };
 
 export type QueuedEvent = {

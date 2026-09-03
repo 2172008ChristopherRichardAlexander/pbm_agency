@@ -5,6 +5,7 @@ declare global {
     interface Window {
         fbq?: (...args: unknown[]) => void;
         __META_PAGE_VIEW_EVENT_ID?: string;
+        __PBM_META_EVENTS?: Partial<Record<import('@/analytics/event-types').EventType, string>>;
         dataLayer?: Record<string, unknown>[];
     }
 }
