@@ -6,6 +6,7 @@ import ReactDOMServer from 'react-dom/server';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import AuthLayout from '@/layouts/auth-layout';
+import TrackingLayout from '@/layouts/tracking-layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'PBM Agency';
 
@@ -22,9 +23,9 @@ createServer((page) =>
         layout: (name) => {
             switch (true) {
                 case name.startsWith('auth/'):
-                    return AuthLayout;
+                    return [TrackingLayout, AuthLayout];
                 default:
-                    return null;
+                    return TrackingLayout;
             }
         },
         setup: ({ App, props }) => {

@@ -2,8 +2,8 @@ import { createInertiaApp } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { AnalyticsBootstrap } from '@/hooks/use-analytics';
 import { initializeTheme } from '@/hooks/use-appearance';
+import TrackingLayout from '@/layouts/tracking-layout';
 
 const AuthLayout = lazy(() => import('@/layouts/auth-layout'));
 
@@ -14,9 +14,9 @@ createInertiaApp({
     layout: (name) => {
         switch (true) {
             case name.startsWith('auth/'):
-                return AuthLayout;
+                return [TrackingLayout, AuthLayout];
             default:
-                return null;
+                return TrackingLayout;
         }
     },
     strictMode: true,
@@ -25,7 +25,6 @@ createInertiaApp({
             <TooltipProvider delayDuration={0}>
                 {/* Suspense is required when using lazy() layout imports */}
                 <Suspense fallback={null}>{app}</Suspense>
-                <AnalyticsBootstrap />
                 <Toaster />
             </TooltipProvider>
         );
