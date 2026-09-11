@@ -13,7 +13,7 @@ File `.env` mengatur satu instalasi aplikasi. Nilai production berbeda dari loca
 | `APP_URL` | `https://example.com` | URL dasar, termasuk callback payment. |
 | `APP_LOCALE` | `id` | Bahasa default aplikasi. |
 
-## Database dan proses background
+## Database dan penyimpanan aplikasi
 
 | Variabel | Fungsi |
 |---|---|
@@ -24,7 +24,7 @@ File `.env` mengatur satu instalasi aplikasi. Nilai production berbeda dari loca
 | `SESSION_DRIVER` | Penyimpanan session; default `database`. |
 | `SESSION_LIFETIME` | Durasi session Laravel dalam menit. |
 | `CACHE_STORE` | Penyimpanan cache; default `database`. |
-| `QUEUE_CONNECTION` | Driver queue; default `database`. |
+| `QUEUE_CONNECTION` | Driver queue Laravel; default `sync`. Boilerplate tidak menggunakan queue untuk Meta CAPI dan tidak membutuhkan worker. |
 
 ## Identitas dan analytics
 
@@ -102,5 +102,4 @@ Setelah mengubah `.env` pada production:
 ```bash
 php artisan optimize:clear
 php artisan config:cache
-php artisan queue:restart
 ```

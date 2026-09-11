@@ -82,8 +82,7 @@ Dokumen ini menjelaskan istilah yang digunakan di seluruh panduan. Istilah tetap
 | GTM | Google Tag Manager; container untuk mengelola tag/script marketing. |
 | GA4 | Google Analytics 4. |
 | Clarity | Microsoft Clarity; layanan recording dan heatmap perilaku pengguna. |
-| Queue | Antrean tugas yang dikerjakan di background. |
-| Worker | Proses yang mengambil dan mengerjakan tugas dari queue. |
+| Queue browser | Antrean singkat di memori browser untuk menggabungkan beberapa event analytics sebelum dikirim ke server. Ini tidak memerlukan proses worker di server. |
 | Scheduler | Penjadwal perintah Laravel. Production memanggilnya melalui cron. |
 | Cron | Penjadwal command pada Linux. |
 | Webhook/callback | Request dari layanan eksternal menuju server untuk melaporkan perubahan status. |

@@ -13,7 +13,7 @@ Panduan ini berdiri sendiri. Developer tidak perlu mengetahui project lain atau 
 - Dashboard perbandingan landing page atau A/B Labs di `/admin/labs`.
 - Integrasi opsional Meta Pixel + Conversions API, Google Tag Manager, GA4, dan Microsoft Clarity.
 - Penyimpanan lead, order, serta pembayaran internal melalui Duitku.
-- Queue, scheduler, pengarsipan analytics, test suite, dan workflow deployment GitHub Actions.
+- Scheduler, pengarsipan analytics, test suite, dan workflow deployment GitHub Actions.
 
 Semua integrasi pihak ketiga bersifat opsional. Landing page dan analytics internal tetap berjalan ketika ID integrasi dikosongkan.
 
@@ -25,7 +25,6 @@ Semua integrasi pihak ketiga bersifat opsional. Landing page dan analytics inter
 - **Event:** catatan satu aktivitas pengunjung, misalnya `visit`, `scroll`, atau `lead`.
 - **Funnel:** urutan tahapan dari kunjungan sampai konversi.
 - **Webhook/callback:** request dari layanan eksternal ke server untuk memberi tahu hasil proses, misalnya pembayaran berhasil.
-- **Queue worker:** proses background yang mengerjakan tugas tertunda seperti mengirim Meta CAPI tanpa memperlambat halaman.
 - **Environment variable:** nilai konfigurasi di file `.env`, termasuk database, mode project, dan credential rahasia.
 
 Istilah lainnya tersedia di [Glosarium](docs/00-glossary.md).
@@ -41,7 +40,7 @@ Istilah lainnya tersedia di [Glosarium](docs/00-glossary.md).
 | MySQL/MariaDB | Database aplikasi dan analytics |
 | Git | Mengambil dan mengelola source code |
 
-Untuk production, siapkan juga queue worker, scheduler/cron, HTTPS, dan web server yang document root-nya mengarah ke folder `public`.
+Untuk production, siapkan juga scheduler/cron, HTTPS, dan web server yang document root-nya mengarah ke folder `public`.
 
 ## 1. Pilih mode project
 
@@ -189,7 +188,6 @@ Setelah mengubah `.env` pada server yang menggunakan cache konfigurasi, jalankan
 ```bash
 php artisan optimize:clear
 php artisan config:cache
-php artisan queue:restart
 ```
 
 ## 5. Cara analytics bekerja
@@ -216,16 +214,17 @@ Lihat [Kontrak Event dan Metrik](docs/02-analytics-events.md) sebelum menambah e
 
 Jangan commit file `.env` atau menaruh credential di source code.
 
-## 7. Menjalankan proses background
+## 7. Menjalankan scheduler
 
-Pada local development, `composer dev` menjalankan server, queue worker, dan Vite bersamaan. Pada production, queue worker harus dikelola Supervisor dan scheduler harus dipanggil cron setiap menit.
+Pada local development, `composer dev` menjalankan Laravel dan Vite bersamaan. Meta CAPI dikirim langsung oleh server ketika event diterima sehingga tidak memerlukan queue worker.
+
+Pada production, cron harus memanggil scheduler Laravel setiap menit. **Cron** adalah penjadwal milik sistem operasi, sedangkan **scheduler Laravel** menentukan task aplikasi yang perlu dijalankan pada waktu tersebut.
 
 ```bash
-php artisan queue:work --tries=3
 php artisan schedule:work
 ```
 
-Tanpa queue worker, event internal tetap tersimpan tetapi pengiriman Meta CAPI tidak berjalan. Tanpa scheduler, data analytics lama tidak dipindahkan ke tabel arsip.
+Command `schedule:work` sesuai untuk local development. Pada production, gunakan konfigurasi cron dari [panduan deployment](docs/09-deployment.md). Tanpa scheduler, data analytics lama tidak dipindahkan ke tabel arsip.
 
 ## 8. Sebelum deploy
 

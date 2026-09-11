@@ -6,7 +6,6 @@ Payment internal berarti boilerplate membuat order, meminta invoice ke Duitku, d
 
 - Akun merchant Duitku dan credential sandbox.
 - Domain HTTPS yang dapat diakses Duitku untuk callback.
-- Queue worker aktif jika Meta CAPI digunakan.
 - Harga produk ditentukan server melalui `.env`.
 
 ## Konfigurasi sandbox

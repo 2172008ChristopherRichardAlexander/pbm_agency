@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Throwable;
 
 class MetaConversionService
 {
@@ -49,9 +52,52 @@ class MetaConversionService
         }
 
         return Http::asJson()
-            ->timeout(10)
+            ->connectTimeout(2)
+            ->timeout(5)
             ->post(sprintf('https://graph.facebook.com/%s/%s/events?access_token=%s', config('meta.graph_version'), config('meta.pixel_id'), urlencode((string) config('meta.access_token'))), $payload)
             ->throw();
+    }
+
+    public function sendDirect(string $eventName, string $eventId, array $data, array $context): bool
+    {
+        if (! $this->enabled()) {
+            return false;
+        }
+
+        try {
+            $response = $this->send($eventName, $eventId, $data, $context);
+            $this->log($eventName, $eventId, 'sent', $response?->status(), $response?->json());
+
+            return true;
+        } catch (Throwable $exception) {
+            $httpStatus = $exception instanceof RequestException ? $exception->response->status() : null;
+            $error = $httpStatus ? "Meta CAPI returned HTTP {$httpStatus}." : 'Meta CAPI request could not be completed.';
+            $this->log($eventName, $eventId, 'failed', $httpStatus, null, $error);
+
+            return false;
+        }
+    }
+
+    private function log(string $eventName, string $eventId, string $status, ?int $httpStatus, ?array $response, ?string $error = null): void
+    {
+        if (! config('meta.log_enabled')) {
+            return;
+        }
+
+        try {
+            DB::table('meta_capi_logs')->insert([
+                'event_id' => $eventId,
+                'event_name' => $eventName,
+                'status' => $status,
+                'http_status' => $httpStatus,
+                'response' => $response ? json_encode($response) : null,
+                'error' => $error,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (Throwable) {
+            // Audit logging must never interrupt analytics or the visitor journey.
+        }
     }
 
     private function hashEmail(string $email): string

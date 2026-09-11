@@ -85,8 +85,7 @@ QA (Quality Assurance) adalah proses memeriksa bahwa fitur bekerja sesuai kebutu
 
 - [ ] `composer test` lulus.
 - [ ] `npm run lint:check`, `format:check`, `types:check`, dan `build` lulus.
-- [ ] Queue worker berstatus running.
-- [ ] Tidak ada failed job tersisa.
+- [ ] Meta server event muncul tanpa menjalankan queue worker.
 - [ ] Cron dan scheduler aktif.
 - [ ] `analytics:archive` dapat dijalankan.
 - [ ] Log rotation aktif dan disk memiliki ruang cukup.

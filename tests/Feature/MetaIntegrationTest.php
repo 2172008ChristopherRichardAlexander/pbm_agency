@@ -2,11 +2,8 @@
 
 use App\Analytics\EventType;
 use App\Analytics\MetaEventMapper;
-use App\Jobs\SendMetaCapiEvent;
 use App\Services\MetaConversionService;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Queue;
 
 test('meta mapping is centralized', function () {
     $mapper = app(MetaEventMapper::class);
@@ -15,18 +12,23 @@ test('meta mapping is centralized', function () {
         ->and($mapper->map(EventType::Scroll))->toBeNull();
 });
 
-test('tracking dispatches capi with the browser event id', function () {
+test('tracking sends capi directly with the browser event id', function () {
     config()->set('meta.enabled', true);
     config()->set('meta.pixel_id', '123');
     config()->set('meta.access_token', 'secret');
-    Queue::fake();
+    Http::fake(['graph.facebook.com/*' => Http::response(['events_received' => 1])]);
 
     $this->postJson('/analytics/track', [
         'event_type' => EventType::Visit->value,
         'event_data' => ['event_id' => 'shared-event-id'],
     ])->assertCreated();
 
-    Queue::assertPushed(SendMetaCapiEvent::class, fn ($job) => $job->eventId === 'shared-event-id' && $job->eventName === 'PageView');
+    Http::assertSent(function ($request) {
+        $data = $request->data();
+
+        return $data['data'][0]['event_id'] === 'shared-event-id'
+            && $data['data'][0]['event_name'] === 'PageView';
+    });
 });
 
 test('capi hashes pii and includes test event code', function () {
@@ -59,14 +61,18 @@ test('missing access token disables capi silently', function () {
     Http::assertNothingSent();
 });
 
-test('failed capi requests bubble so the queue can retry them', function () {
+test('failed direct capi requests do not break internal tracking', function () {
     config()->set('meta.enabled', true);
     config()->set('meta.pixel_id', '123');
     config()->set('meta.access_token', 'secret');
     Http::fake(['graph.facebook.com/*' => Http::response(['error' => 'temporary'], 503)]);
 
-    $job = new SendMetaCapiEvent('Lead', 'retry-id', [], []);
+    $this->postJson('/analytics/track', [
+        'event_type' => EventType::Visit->value,
+        'event_data' => ['event_id' => 'failed-meta-event-id'],
+    ])->assertCreated();
 
-    expect(fn () => $job->handle(app(MetaConversionService::class)))
-        ->toThrow(RequestException::class);
+    $this->assertDatabaseHas('user_analytics', [
+        'event_type' => EventType::Visit->value,
+    ]);
 });

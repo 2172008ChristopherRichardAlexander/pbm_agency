@@ -38,10 +38,7 @@ Laravel mungkin masih menggunakan cache konfigurasi:
 ```bash
 php artisan optimize:clear
 php artisan config:cache
-php artisan queue:restart
 ```
-
-Worker adalah proses lama dan perlu direstart agar membaca konfigurasi baru.
 
 ## Route tidak sesuai mode
 
@@ -91,12 +88,15 @@ Engagement adalah negasi bounce. Klik CTA funnel juga membuat session menjadi en
 
 ## Meta CAPI tidak terkirim
 
-```bash
-php artisan queue:work --tries=3
-php artisan queue:failed
+Meta CAPI dikirim langsung dan tidak memerlukan queue worker. Periksa `META_PIXEL_ID`, `META_ACCESS_TOKEN`, `META_CAPI_ENABLED`, cache konfigurasi, dan koneksi HTTPS keluar server. Gunakan Test Events; jangan menyalin token ke log atau chat publik.
+
+Untuk melihat status respons server sementara:
+
+```dotenv
+META_CAPI_LOG_ENABLED=true
 ```
 
-Periksa `META_PIXEL_ID`, `META_ACCESS_TOKEN`, `META_CAPI_ENABLED`, dan koneksi keluar server. Gunakan Test Events; jangan menyalin token ke log atau chat publik.
+Jalankan `php artisan optimize:clear`, ulangi satu event, lalu periksa tabel `meta_capi_logs`. Kembalikan nilainya ke `false` setelah selesai agar tabel audit tidak terus bertambah.
 
 ## GTM/GA4 tercatat dua kali
 
@@ -109,13 +109,6 @@ Jika `GTM_CONTAINER_ID` terisi, kelola GA4 melalui GTM. Jangan memasang GA4 kedu
 - Periksa log callback dan dashboard merchant.
 - Pastikan nominal callback sama dengan amount order.
 - Jika memakai tunnel local, buat invoice baru setiap URL tunnel berubah.
-
-## Queue tidak berjalan
-
-- Local: jalankan `php artisan queue:work --tries=3`.
-- Production: periksa `sudo supervisorctl status`.
-- Setelah deploy: jalankan `php artisan queue:restart`.
-- Periksa failed job dengan `php artisan queue:failed`.
 
 ## Scheduler atau arsip tidak berjalan
 

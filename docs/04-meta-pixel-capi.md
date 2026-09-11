@@ -33,7 +33,6 @@ Setelah `.env` berubah:
 ```bash
 php artisan optimize:clear
 php artisan config:cache
-php artisan queue:restart
 ```
 
 ## Mapping event
@@ -52,20 +51,16 @@ php artisan queue:restart
 
 Payment hanya dikirim server karena status pembayaran harus berasal dari callback yang terverifikasi.
 
-## Queue worker wajib
+## Cara pengiriman server event
 
-CAPI dikirim melalui queue agar request pengunjung tidak menunggu Meta. Jalankan worker:
+CAPI dikirim langsung oleh server pada request analytics yang sama. Tidak ada queue atau worker yang perlu dijalankan. Koneksi ke Meta memiliki batas waktu singkat agar gangguan Meta tidak menahan request tanpa batas.
 
-```bash
-php artisan queue:work --tries=3
-```
-
-Pada production, gunakan Supervisor sebagaimana dijelaskan di [Deployment](09-deployment.md).
+Event analytics internal disimpan sebelum pengiriman CAPI. Jika Meta gagal merespons, data internal tetap tersimpan dan request analytics tidak dibuat gagal. Aktifkan audit log sementara jika perlu mengetahui status respons Meta.
 
 ## Verifikasi dengan Test Events
 
 1. Buka Events Manager → Test Events dan salin test event code.
-2. Isi `META_TEST_EVENT_CODE`, bersihkan cache konfigurasi, lalu restart worker.
+2. Isi `META_TEST_EVENT_CODE`, lalu bersihkan dan buat ulang cache konfigurasi.
 3. Buka landing page staging dan lakukan satu tindakan pada setiap CTA penting.
 4. Pastikan event browser dan server muncul dengan Event ID yang sama serta ditandai deduplicated.
 5. Untuk FORM internal, selesaikan payment sandbox dan pastikan Purchase berasal dari Server.
@@ -79,7 +74,7 @@ Jangan menulis email, telepon, access token, atau signature ke log.
 
 ## Troubleshooting singkat
 
-- Server event tidak muncul: periksa worker, `QUEUE_CONNECTION=database`, Pixel ID, dan access token.
+- Server event tidak muncul: periksa Pixel ID, access token, cache konfigurasi, koneksi HTTPS keluar server, dan respons pada audit log.
 - Browser event tidak muncul: periksa Pixel ID, ad blocker, dan browser console.
 - Event terhitung dua kali: cocokkan Event ID browser dan server pada Test Events.
 - Match quality rendah: pastikan form mengirim email/telepon yang valid.

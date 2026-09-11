@@ -84,7 +84,6 @@ Route FORM didaftarkan berdasarkan konfigurasi saat aplikasi boot. Setelah mode 
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
-php artisan queue:restart
 ```
 
 Periksa route aktif:

@@ -59,5 +59,4 @@ jobs:
             composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate --force
             php artisan optimize
-            php artisan queue:restart
             php artisan up

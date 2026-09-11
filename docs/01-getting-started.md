@@ -79,7 +79,7 @@ Jalankan migration:
 php artisan migrate
 ```
 
-Migration membuat tabel user, session, cache, queue, analytics, lead, order, dan arsip analytics.
+Migration membuat tabel user, session, cache, analytics, lead, order, dan arsip analytics. Tabel queue bawaan Laravel juga tersedia untuk pengembangan fitur lain, tetapi boilerplate tidak memerlukan queue worker untuk beroperasi.
 
 Jika command gagal, jangan lanjut ke langkah berikutnya. Cocokkan nama database, username, password, port, serta pastikan service database sedang aktif.
 
@@ -131,19 +131,17 @@ Tidak ada registrasi publik. Akun admin hanya dibuat melalui command tersebut.
 composer dev
 ```
 
-Command ini menjalankan tiga proses:
+Command ini menjalankan dua proses:
 
 1. Laravel development server.
-2. Queue worker untuk tugas background.
-3. Vite development server untuk frontend.
+2. Vite development server untuk frontend.
 
 Buka `http://localhost:8000`. Login admin tersedia di `/login`.
 
-Jika ingin menjalankan proses secara terpisah, buka tiga terminal:
+Jika ingin menjalankan proses secara terpisah, buka dua terminal:
 
 ```bash
 php artisan serve
-php artisan queue:work --tries=3
 npm run dev
 ```
 
@@ -184,6 +182,6 @@ Seeder membuat data dummy agar chart dan tabel mudah diperiksa. Jangan menjalank
 - `/login` menerima akun yang dibuat.
 - `/admin` dan `/admin/labs` hanya dapat dibuka setelah login admin.
 - Reload landing page membuat data visit pada dashboard.
-- `php artisan queue:work` tetap berjalan tanpa error.
+- Event internal muncul di dashboard setelah landing page dibuka.
 
 Jika salah satu gagal, lihat [Troubleshooting](10-troubleshooting.md).

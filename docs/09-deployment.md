@@ -10,7 +10,6 @@ Deployment adalah proses memindahkan aplikasi ke server yang melayani pengguna n
 - Composer 2.
 - Node.js 22.13+ hanya diperlukan pada tahap build.
 - Web server dengan document root menuju folder `public`.
-- Queue worker yang selalu hidup.
 - Cron yang menjalankan scheduler setiap menit.
 
 Misalnya source code berada di:
@@ -45,7 +44,7 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://example.com
 LOG_CHANNEL=daily
-QUEUE_CONNECTION=database
+QUEUE_CONNECTION=sync
 CACHE_STORE=database
 SESSION_DRIVER=database
 ```
@@ -76,41 +75,7 @@ php artisan pbm:create-admin
 
 Option `--force` mengizinkan migration berjalan pada production. Pastikan folder `storage` dan `bootstrap/cache` dapat ditulis oleh user web server.
 
-## 4. Queue worker dengan Supervisor
-
-Supervisor menjaga worker tetap hidup dan menjalankannya kembali jika proses berhenti. Buat `/etc/supervisor/conf.d/pbm-lp-worker.conf`:
-
-```ini
-[program:pbm-lp-worker]
-process_name=%(program_name)s_%(process_num)02d
-command=php /home/example.com/public_html/current/artisan queue:work database --sleep=3 --tries=3 --timeout=60
-directory=/home/example.com/public_html/current
-autostart=true
-autorestart=true
-stopasgroup=true
-killasgroup=true
-user=example
-numprocs=2
-redirect_stderr=true
-stdout_logfile=/home/example.com/public_html/current/storage/logs/worker.log
-stopwaitsecs=3600
-```
-
-Sesuaikan path dan user, lalu aktifkan:
-
-```bash
-sudo supervisorctl reread
-sudo supervisorctl update
-sudo supervisorctl restart pbm-lp-worker:*
-```
-
-Periksa status:
-
-```bash
-sudo supervisorctl status
-```
-
-## 5. Scheduler dengan cron
+## 4. Scheduler dengan cron
 
 Tambahkan cron pada user aplikasi:
 
@@ -120,9 +85,9 @@ Tambahkan cron pada user aplikasi:
 
 Cron memanggil scheduler setiap menit. Laravel menentukan task yang benar-benar dijalankan. Project ini menjadwalkan `analytics:archive` setiap hari pukul 02:30.
 
-## 6. GitHub Actions
+## 5. GitHub Actions
 
-Workflow `.github/workflows/deploy.yml` berjalan saat branch `main` menerima push atau ketika dijalankan manual. Workflow melakukan validasi, test, build, membuat archive release, mengirimnya ke VPS, menjalankan migration, mengoptimalkan Laravel, dan restart queue.
+Workflow `.github/workflows/deploy.yml` berjalan saat branch `main` menerima push atau ketika dijalankan manual. Workflow melakukan validasi, test, build, membuat archive release, mengirimnya ke VPS, menjalankan migration, dan mengoptimalkan Laravel.
 
 Buat GitHub Environment bernama `production`, lalu tambahkan secrets:
 
@@ -136,7 +101,7 @@ Buat GitHub Environment bernama `production`, lalu tambahkan secrets:
 
 File `.env` server tidak dikirim workflow dan tetap dipertahankan di server.
 
-## 7. Update berikutnya
+## 6. Update berikutnya
 
 Urutan aman untuk deployment manual:
 
@@ -148,13 +113,12 @@ npm ci
 npm run build
 php artisan migrate --force
 php artisan optimize
-php artisan queue:restart
 php artisan up
 ```
 
 Maintenance mode dari `artisan down` mencegah pengguna mengakses aplikasi saat file dan database belum sinkron.
 
-## 8. Log rotation
+## 7. Log rotation
 
 Gunakan:
 
@@ -163,19 +127,9 @@ LOG_CHANNEL=daily
 LOG_DAILY_DAYS=14
 ```
 
-Untuk log Supervisor, tambahkan konfigurasi logrotate:
+Laravel akan membuat file log harian di `storage/logs`. Pastikan folder tersebut dapat ditulis oleh user web server dan dipantau agar error production dapat ditemukan.
 
-```text
-/home/example.com/public_html/current/storage/logs/worker.log {
-  daily
-  rotate 14
-  compress
-  missingok
-  copytruncate
-}
-```
-
-## 9. Smoke test setelah deploy
+## 8. Smoke test setelah deploy
 
 Smoke test adalah pemeriksaan singkat bahwa fungsi utama hidup:
 
@@ -184,8 +138,7 @@ Smoke test adalah pemeriksaan singkat bahwa fungsi utama hidup:
 3. Login dan buka `/admin` serta `/admin/labs`.
 4. Klik satu CTA dan pastikan event muncul.
 5. Submit form pada mode FORM.
-6. Periksa status worker dan failed jobs.
-7. Uji callback sandbox jika menggunakan Duitku.
-8. Periksa Meta Test Events/GTM Preview/Clarity jika diaktifkan.
+6. Uji callback sandbox jika menggunakan Duitku.
+7. Periksa Meta Test Events/GTM Preview/Clarity jika diaktifkan.
 
 Selesaikan [Checklist QA](11-qa-checklist.md) sebelum membuka traffic campaign.
