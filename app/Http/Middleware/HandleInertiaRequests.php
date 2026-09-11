@@ -47,6 +47,7 @@ class HandleInertiaRequests extends Middleware
             'tracking' => [
                 'enabled' => config('analytics.enabled'),
                 'mode' => config('analytics.mode'),
+                'pageUrl' => $request->getRequestUri(),
                 'paymentMode' => config('analytics.payment_mode'),
                 'visitorId' => $request->attributes->get('pbm_visitor_id'),
                 'eventLabels' => EventType::labelsFor((string) config('analytics.mode')),

@@ -55,7 +55,7 @@ class AnalyticsController extends Controller
 
     private function range(Request $request): array
     {
-        $allowed = [7, 30, 90];
+        $allowed = [3, 5, 7, 14, 30, 90];
         $days = (int) $request->integer('range', 30);
         if (! in_array($days, $allowed, true)) {
             $days = 30;

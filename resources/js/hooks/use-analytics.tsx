@@ -56,10 +56,8 @@ function useVisitTracking(enabled: boolean, pageUrl: string): void {
     }, [enabled, pageUrl]);
 }
 
-export function AnalyticsBootstrap() {
-    const page = usePage();
-    const tracking = page.props.tracking as TrackingProps;
-    useVisitTracking(tracking.enabled, page.url);
+export function AnalyticsBootstrap({ tracking }: { tracking: TrackingProps }) {
+    useVisitTracking(tracking.enabled, tracking.pageUrl);
     useEngagement(tracking);
     useScrollTracking(tracking.enabled);
     useSectionTracking(tracking.enabled && tracking.sectionViewEnabled);

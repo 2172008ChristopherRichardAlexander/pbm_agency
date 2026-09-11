@@ -46,6 +46,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', [AnalyticsController::class, 'index'])->name('analytics');
     Route::get('/export', [AnalyticsController::class, 'export'])->name('analytics.export');
     Route::get('/labs', [LabsController::class, 'index'])->name('labs');
+    Route::post('/labs/clear-cache', [LabsController::class, 'clearCache'])->name('labs.clear-cache');
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
     Route::post('/orders/{order}/mark-paid', [AdminOrderController::class, 'markAsPaid'])->name('orders.mark-paid');

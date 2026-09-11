@@ -1,43 +1,91 @@
-import { EVENT_TYPES } from '@/analytics/event-types';
+import {
+    CartesianGrid,
+    Legend,
+    Line,
+    LineChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+export type ChartSeries = { key: string; label: string; color: string };
 
 export function DailyChart({
     rows,
-    label,
+    series,
 }: {
     rows: Array<Record<string, number | string>>;
-    label: string;
+    series: ChartSeries[];
 }) {
-    const maximum = Math.max(
-        1,
-        ...rows.map((row) => Number(row[EVENT_TYPES.visit] ?? 0)),
-    );
-
     return (
-        <Card>
+        <Card className="border-border/50 bg-card/30 backdrop-blur-sm">
             <CardHeader>
-                <CardTitle>Daily {label}</CardTitle>
+                <CardTitle>Funnel Trends</CardTitle>
             </CardHeader>
-            <CardContent className="flex h-52 items-end gap-1 overflow-x-auto">
-                {rows.map((row) => (
-                    <div
-                        key={String(row.date)}
-                        className="group flex min-w-3 flex-1 flex-col items-center"
-                        title={`${row.date}: ${row[EVENT_TYPES.visit] ?? 0}`}
-                    >
-                        <div
-                            className="w-full rounded-t bg-indigo-500"
-                            style={{
-                                height: `${Math.max(3, (Number(row[EVENT_TYPES.visit] ?? 0) / maximum) * 170)}px`,
-                            }}
-                        />
-                        <span className="sr-only">{row.date}</span>
+            <CardContent>
+                {rows.length === 0 ? (
+                    <div className="flex h-[320px] items-center justify-center text-sm text-muted-foreground">
+                        Belum ada data untuk periode ini.
                     </div>
-                ))}
-                {rows.length === 0 && (
-                    <p className="m-auto text-sm text-muted-foreground">
-                        Belum ada data.
-                    </p>
+                ) : (
+                    <div className="h-[320px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart
+                                data={rows}
+                                margin={{
+                                    top: 8,
+                                    right: 12,
+                                    left: -20,
+                                    bottom: 0,
+                                }}
+                            >
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                    className="stroke-border"
+                                />
+                                <XAxis
+                                    dataKey="date"
+                                    className="fill-muted-foreground text-xs"
+                                    tickFormatter={(value) =>
+                                        new Date(
+                                            `${value}T00:00:00`,
+                                        ).toLocaleDateString('id-ID', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                        })
+                                    }
+                                    minTickGap={24}
+                                />
+                                <YAxis
+                                    allowDecimals={false}
+                                    className="fill-muted-foreground text-xs"
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: 'var(--popover)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '8px',
+                                        color: 'var(--popover-foreground)',
+                                    }}
+                                />
+                                <Legend />
+                                {series.map((item) => (
+                                    <Line
+                                        key={item.key}
+                                        type="monotone"
+                                        dataKey={item.key}
+                                        name={item.label}
+                                        stroke={item.color}
+                                        strokeWidth={2}
+                                        dot={false}
+                                        activeDot={{ r: 4 }}
+                                    />
+                                ))}
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
                 )}
             </CardContent>
         </Card>
