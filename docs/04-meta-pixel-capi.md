@@ -1,48 +1,86 @@
 # Meta Pixel dan Conversions API
 
-## Setup
+Meta Pixel mengirim event dari browser. Meta Conversions API (CAPI) mengirim event dari server. Menggunakan keduanya membantu Meta menerima data ketika salah satu jalur terhalang, tetapi event yang sama harus memiliki Event ID yang sama agar Meta dapat melakukan deduplication.
+
+## Kapan perlu diaktifkan?
+
+Aktifkan ketika landing page digunakan untuk campaign Meta Ads dan akun klien memiliki Pixel serta access token CAPI. Jika tidak diperlukan, kosongkan credential; aplikasi tetap berjalan.
+
+## Konfigurasi
+
+Tambahkan ke `.env`:
 
 ```dotenv
 META_PIXEL_ID=123456789
 META_ACCESS_TOKEN=token-dari-events-manager
-META_TEST_EVENT_CODE=TEST12345
+META_TEST_EVENT_CODE=
 META_CAPI_ENABLED=true
 META_CAPI_LOG_ENABLED=false
+META_GRAPH_VERSION=v23.0
 ```
 
-Pixel berjalan di browser. CAPI dijalankan worker queue. Jika pixel ID atau access token kosong, CAPI berhenti tanpa exception.
+| Variabel | Fungsi |
+|---|---|
+| `META_PIXEL_ID` | ID dataset/pixel Meta. |
+| `META_ACCESS_TOKEN` | Secret untuk mengirim server event. Jangan commit atau tampilkan di browser. |
+| `META_TEST_EVENT_CODE` | Kode sementara dari menu Test Events. Kosongkan pada production. |
+| `META_CAPI_ENABLED` | Mengaktifkan pengiriman server event. |
+| `META_CAPI_LOG_ENABLED` | Menyimpan hasil request CAPI ke tabel audit. Aktifkan hanya saat troubleshooting. |
+| `META_GRAPH_VERSION` | Versi endpoint Graph API yang digunakan aplikasi. |
 
-## Mapping
+Setelah `.env` berubah:
 
-| Event internal | Meta event | Pixel | CAPI |
-|---|---|---|---|
-| Visit | PageView | ya | ya |
-| Engagement | ViewContent | ya | ya |
-| Intent | custom Intent | ya | ya |
-| Direct Checkout | InitiateCheckout | ya | ya |
-| Whatsapp Lead | Lead | ya | ya |
-| Form Start | InitiateCheckout | ya | ya |
-| Lead | Lead | setelah server mengonfirmasi | ya |
-| Payment | Purchase | tidak | ya |
-| Scroll, Section View | tidak dikirim | tidak | tidak |
+```bash
+php artisan optimize:clear
+php artisan config:cache
+php artisan queue:restart
+```
 
-Mapping didefinisikan di `MetaEventMapper`. `event_id` browser diteruskan ke event internal dan job CAPI sehingga Events Manager dapat melakukan dedup.
+## Mapping event
 
-Email dinormalisasi lowercase + trim; telepon menjadi digit E.164 tanpa `+`; keduanya di-hash SHA-256 sebelum request Meta.
+| Event internal | Meta event | Browser Pixel | Server CAPI |
+|---|---|---:|---:|
+| Visit | PageView | Ya | Ya |
+| Engagement | ViewContent | Ya | Ya |
+| Intent | Custom event `Intent` | Ya | Ya |
+| Direct Checkout | InitiateCheckout | Ya | Ya |
+| WhatsApp Lead | Lead | Ya | Ya |
+| Form Start | InitiateCheckout | Ya | Ya |
+| Lead | Lead | Setelah server mengonfirmasi | Ya |
+| Payment | Purchase | Tidak | Ya |
+| Scroll/Section View | Tidak dikirim | Tidak | Tidak |
 
-## Verifikasi Test Events
+Payment hanya dikirim server karena status pembayaran harus berasal dari callback yang terverifikasi.
 
-1. Isi Test Event Code dan jalankan `php artisan queue:work --tries=3`.
-2. Buka Events Manager → Test Events.
-3. Buka demo, klik CTA, atau submit form.
-4. Pastikan event menunjukkan Browser dan Server serta deduplicated, bukan dua conversion.
-5. Selesaikan payment sandbox; Purchase harus berasal dari Server saja.
-6. Kosongkan Test Event Code sebelum production.
+## Queue worker wajib
 
-## Troubleshooting
+CAPI dikirim melalui queue agar request pengunjung tidak menunggu Meta. Jalankan worker:
 
-- Tidak ada Server event: pastikan worker hidup, `QUEUE_CONNECTION=database`, migration jobs sudah dijalankan, token/pixel terisi.
-- Event dua kali: bandingkan `event_id` Pixel dan CAPI di Test Events.
-- Match quality rendah: pastikan lead mengandung email/telepon yang benar; jangan log PII.
-- Perlu audit request: aktifkan `META_CAPI_LOG_ENABLED=true` sementara dan baca `meta_capi_logs`. Matikan setelah selesai.
-- Jangan menambah logging CAPI ke `laravel.log`.
+```bash
+php artisan queue:work --tries=3
+```
+
+Pada production, gunakan Supervisor sebagaimana dijelaskan di [Deployment](09-deployment.md).
+
+## Verifikasi dengan Test Events
+
+1. Buka Events Manager → Test Events dan salin test event code.
+2. Isi `META_TEST_EVENT_CODE`, bersihkan cache konfigurasi, lalu restart worker.
+3. Buka landing page staging dan lakukan satu tindakan pada setiap CTA penting.
+4. Pastikan event browser dan server muncul dengan Event ID yang sama serta ditandai deduplicated.
+5. Untuk FORM internal, selesaikan payment sandbox dan pastikan Purchase berasal dari Server.
+6. Kosongkan `META_TEST_EVENT_CODE` setelah verifikasi.
+
+## Data pengguna
+
+Email dinormalisasi menjadi lowercase dan nomor telepon menjadi digit format internasional tanpa tanda `+`. Data kemudian di-hash SHA-256 sebelum dikirim. Hash adalah transformasi satu arah; nilai asli tidak ikut dikirim sebagai field hashing.
+
+Jangan menulis email, telepon, access token, atau signature ke log.
+
+## Troubleshooting singkat
+
+- Server event tidak muncul: periksa worker, `QUEUE_CONNECTION=database`, Pixel ID, dan access token.
+- Browser event tidak muncul: periksa Pixel ID, ad blocker, dan browser console.
+- Event terhitung dua kali: cocokkan Event ID browser dan server pada Test Events.
+- Match quality rendah: pastikan form mengirim email/telepon yang valid.
+- Perlu audit: aktifkan `META_CAPI_LOG_ENABLED=true` sementara, periksa tabel `meta_capi_logs`, lalu matikan kembali.

@@ -1,94 +1,178 @@
-# Frontend Wiring
+# Memasang Tracking pada Frontend
 
-Tracking visit, engagement, heartbeat, scroll, dan section aktif otomatis melalui `AnalyticsBootstrap`. Developer hanya memasang wrapper pada CTA dan form.
+**Wiring frontend** berarti menghubungkan elemen UI dengan tracking yang sudah disediakan. Tracking otomatis dipasang oleh `TrackingLayout` pada semua halaman Inertia. Developer hanya perlu memakai wrapper yang benar pada CTA dan form.
 
-## 1. WhatsApp di pricing
+## Aturan wajib
 
-```tsx
-import { TrackedCTA } from '@/components/tracking/TrackedCTA';
+1. CTA menggunakan `TrackedCTA`.
+2. Form lead menggunakan `TrackedForm`.
+3. Section penting menggunakan elemen `<section>` dengan `id` unik.
+4. Jangan mengirim event `lead` atau `payment` dari browser.
+5. Jangan mengganti nama event resmi.
 
-export function PricingWhatsApp({ waLink }: { waLink: string }) {
-    return <TrackedCTA zone="pricing" action="whatsapp" label="Chat Sekarang" href={waLink}>Chat Sekarang</TrackedCTA>;
-}
-```
-
-## 2. Anchor hero ke pricing
+## CTA WhatsApp
 
 ```tsx
 import { TrackedCTA } from '@/components/tracking/TrackedCTA';
 
-export function HeroCTA() {
-    return <TrackedCTA zone="hero" action="scroll" label="Lihat Paket" href="#pricing">Lihat Paket</TrackedCTA>;
+export function PricingWhatsApp({ url }: { url: string }) {
+    return (
+        <TrackedCTA
+            zone="pricing"
+            action="whatsapp"
+            label="Chat Sekarang"
+            href={url}
+        >
+            Chat Sekarang
+        </TrackedCTA>
+    );
 }
 ```
 
-## 3. Checkout eksternal
+Pada mode CTWA, contoh ini menghasilkan `whatsapp_lead` sebelum browser membuka WhatsApp.
+
+## CTA menuju section
 
 ```tsx
-import { TrackedCTA } from '@/components/tracking/TrackedCTA';
-
-export function ExternalCheckout({ url }: { url: string }) {
-    return <TrackedCTA zone="pricing" action="external_checkout" label="Checkout" href={url}>Checkout</TrackedCTA>;
-}
+<TrackedCTA
+    zone="hero"
+    action="scroll"
+    label="Lihat Paket"
+    href="#pricing"
+>
+    Lihat Paket
+</TrackedCTA>
 ```
 
-## 4. Form + payment internal
+Contoh ini menghasilkan `intent`, lalu browser menuju section dengan `id="pricing"`.
 
-Set `PROJECT_MODE=form`, `PAYMENT_MODE=internal`, harga, dan Duitku. Wrapper otomatis POST lead, POST checkout, lalu membuka URL Duitku.
+## Checkout eksternal pada CTWA
 
 ```tsx
+<TrackedCTA
+    zone="pricing"
+    action="external_checkout"
+    label="Checkout"
+    href={externalCheckoutUrl}
+>
+    Checkout
+</TrackedCTA>
+```
+
+Pada mode CTWA, contoh ini menghasilkan `direct_checkout`.
+
+## Tautan biasa yang ingin diukur
+
+```tsx
+<TrackedCTA
+    zone="faq"
+    action="link"
+    label="Lihat Silabus"
+    href="/silabus.pdf"
+>
+    Lihat Silabus
+</TrackedCTA>
+```
+
+Gunakan `link` ketika klik menunjukkan minat tetapi bukan lead atau checkout.
+
+## Form lead
+
+Field standar adalah `name`, `email`, dan `phone`. `name` serta `phone` wajib; `email` opsional. Field lain otomatis masuk ke kolom JSON `extra`.
+
+```tsx
+import { useState } from 'react';
 import { TrackedForm } from '@/components/tracking/TrackedForm';
+import type { LeadResponse } from '@/components/tracking/TrackedForm';
 
 export function RegistrationForm() {
-    return <TrackedForm formName="main" onError={(message) => alert(message)}>
-        <input name="name" required />
-        <input name="email" type="email" />
-        <input name="phone" required />
-        <button type="submit">Bayar sekarang</button>
-    </TrackedForm>;
+    const [error, setError] = useState('');
+    const success = (response: LeadResponse) => {
+        window.location.assign(response.redirect_url);
+    };
+
+    return (
+        <TrackedForm
+            formName="main"
+            onSuccess={success}
+            onError={setError}
+        >
+            <input name="name" required />
+            <input name="email" type="email" />
+            <input name="phone" required />
+            <input name="city" />
+            {error && <p role="alert">{error}</p>}
+            <button type="submit">Kirim</button>
+        </TrackedForm>
+    );
 }
 ```
 
-## 5. Form + redirect eksternal
+Alurnya:
 
-Set `PAYMENT_MODE=external` dan `EXTERNAL_PAYMENT_URL`. Redirect dilakukan dari response server.
+1. Input pertama menghasilkan `form_start` satu kali untuk `formName` tersebut.
+2. Submit dikirim ke `/lead`.
+3. Server memvalidasi dan menyimpan data.
+4. Server menulis event `lead`.
+5. Browser menerima `redirect_url`.
+6. Mode `none` menuju halaman terima kasih, `external` menuju URL payment klien, dan `internal` otomatis membuat checkout Duitku.
+
+`onSuccess` digunakan pada mode `none` dan `external`. Pada mode `internal`, `TrackedForm` otomatis meminta invoice lalu membuka payment URL.
+
+## Section tracking
 
 ```tsx
-import { TrackedForm, type LeadResponse } from '@/components/tracking/TrackedForm';
-
-export function ExternalPaymentForm() {
-    const redirect = (response: LeadResponse) => window.location.assign(response.redirect_url);
-    return <TrackedForm formName="main" onSuccess={redirect}>
-        <input name="name" required />
-        <input name="phone" required />
-        <button type="submit">Lanjut pembayaran</button>
-    </TrackedForm>;
-}
+<section id="hero">...</section>
+<section id="benefits">...</section>
+<section id="pricing">...</section>
+<section id="faq">...</section>
 ```
 
-Untuk `PAYMENT_MODE=none`, contoh yang sama menuju `THANK_YOU_PATH`.
+Gunakan ID singkat, unik, dan stabil. Jangan menggunakan teks heading sebagai ID jika teks sering berubah. Hook analytics menemukan section baru, termasuk section yang muncul setelah initial render.
 
-## 6. Event manual
+`TrackedSection` hanya diperlukan jika struktur tidak dapat menggunakan elemen `<section>` asli.
+
+## Event manual
+
+Gunakan hanya ketika komponen tidak dapat memakai `TrackedCTA`:
 
 ```tsx
 import { EVENT_TYPES, useAnalytics } from '@/hooks/use-analytics';
 
-export function SyllabusLink() {
+export function CustomButton() {
     const { track } = useAnalytics();
-    return <button onClick={() => track(EVENT_TYPES.intent, { zone: 'faq', action: 'link', cta_label: 'Lihat Silabus' })}>Lihat Silabus</button>;
+
+    return (
+        <button
+            onClick={() =>
+                track(EVENT_TYPES.intent, {
+                    zone: 'faq',
+                    action: 'link',
+                    cta_label: 'Lihat Silabus',
+                })
+            }
+        >
+            Lihat Silabus
+        </button>
+    );
 }
 ```
 
-## Section
+Gunakan konstanta `EVENT_TYPES`; jangan menulis string event manual.
 
-```tsx
-export function Pricing() {
-    return <section id="pricing">...</section>;
-}
-```
+## Cara pengiriman event
 
-Hook menemukan `section[id]`, termasuk section lazy-load melalui MutationObserver. Gunakan ID stabil dan unik. `TrackedSection` hanya diperlukan untuk membungkus struktur yang belum berupa elemen section.
+- Event non-kritis masuk queue browser dan dikirim setiap dua detik atau saat batch mencapai sepuluh event.
+- Event browser untuk WhatsApp lead dan direct checkout dikirim segera. Pada alur FORM, event `lead` dicatat oleh server setelah data form berhasil disimpan sehingga tidak bergantung pada queue browser.
+- Saat halaman ditutup atau tab disembunyikan, queue menggunakan beacon agar navigasi tidak tertahan.
+- Pengiriman yang gagal dicoba sekali, lalu dilepas agar UX pengguna tidak terganggu.
 
-## Keandalan
+## Checklist setelah wiring
 
-Queue flush setiap dua detik atau sepuluh event. Event yang meninggalkan halaman memakai beacon langsung. Queue di-flush pada `pagehide` dan saat tab menjadi hidden. Pengiriman gagal dicoba sekali lalu dibuang agar navigasi tidak pernah tertahan.
+- Setiap CTA memiliki zone, action, dan label yang benar.
+- Tidak ada CTA conversion penting yang masih memakai `<a>` biasa.
+- Setiap form menggunakan nama `formName` yang stabil.
+- Semua input memiliki atribut `name`.
+- Section penting mempunyai ID unik.
+- Browser console tidak menampilkan error.
+- Dashboard menerima visit, intent, dan outcome yang sesuai.
