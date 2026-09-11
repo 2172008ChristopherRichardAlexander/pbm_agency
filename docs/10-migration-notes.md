@@ -17,7 +17,7 @@ Boilerplate ditujukan untuk project baru dan tidak melakukan migrasi data histor
 ## Perubahan angka
 
 - Intent baru hanya CTA non-conversion. Klik WhatsApp/checkout tidak lagi ikut Intent, sehingga Intent akan lebih rendah dan funnel lebih benar.
-- Engagement baru dihitung dari event aktif 15 detik, bukan `visits - bounces`. Angkanya tidak comparable dengan laporan lama.
+- Engagement dihitung sebagai `visits - bounces`, sehingga Engagement Rate selalu menjadi negasi Bounce Rate. Event aktif 15 detik tetap menjadi salah satu sinyal yang mengubah sesi menjadi engaged.
 - Total Lead CTWA memakai distinct session gabungan WhatsApp + direct checkout; satu sesi yang melakukan keduanya dihitung satu.
 - Payment hanya berasal dari callback/sign-off admin dengan nominal database. Refresh thank-you page tidak membuat sale baru.
 - Dashboard hanya membaca 90 hari live; data lebih lama berada di tabel arsip.

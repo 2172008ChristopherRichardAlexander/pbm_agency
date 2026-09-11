@@ -29,7 +29,7 @@ Dokumen ini mencatat hasil audit tiga repository produksi sebelum boilerplate di
 
 - Gunakan `App\Analytics\EventType` sebagai sumber taxonomy backend dan mirror TypeScript sebagai satu-satunya sumber event frontend.
 - Hapus diskriminator `event_data.type`; resolusi CTA ditentukan oleh `action`, sedangkan `zone` hanya dimensi laporan.
-- Hitung Engagement dari event `engagement`, bukan `visits - bounces`; Intent tidak mencakup lead/checkout.
+- Hitung Engagement sebagai `visits - bounces`; event `engagement` tetap menjadi sinyal durasi aktif. Intent tidak mencakup lead/checkout.
 - Tambahkan `analytics_sessions`, endpoint heartbeat, `visitor_id`, cookie `pbm_vid`, dan archive 90 hari.
 - Pindahkan Meta CAPI ke queue serta satukan mapping di `MetaEventMapper`.
 - Tulis `lead` dan `payment` dari server; callback Duitku harus terverifikasi dan idempoten.

@@ -73,7 +73,7 @@ export function ConversionFunnel({ stages }: { stages: FunnelStage[] }) {
     const branches = stages.filter((stage) => stage.branch !== 'main');
 
     return (
-        <section className="rounded-xl border border-border/50 bg-card/30 p-6 backdrop-blur-sm transition hover:border-primary/30">
+        <section className="analytics-panel rounded-xl border border-border/50 bg-card/30 p-6 backdrop-blur-sm transition hover:border-primary/30">
             <div className="mb-6">
                 <h2 className="text-lg font-semibold text-foreground">
                     Conversion Funnel
@@ -100,7 +100,7 @@ export function ConversionFunnel({ stages }: { stages: FunnelStage[] }) {
                         {branches.map((stage, index) => (
                             <div
                                 key={stage.event}
-                                className="rounded-lg border border-border/50 bg-muted/20 p-4"
+                                className="analytics-subpanel rounded-lg border border-border/50 bg-muted/20 p-4"
                             >
                                 <Transition value={stage.transition_pct} />
                                 <Stage

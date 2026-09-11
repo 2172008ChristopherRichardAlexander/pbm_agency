@@ -1,8 +1,10 @@
 <?php
 
 use App\Analytics\EventType;
+use App\Analytics\TrackingService;
 use App\Models\AnalyticsSession;
 use App\Models\UserAnalytic;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 test('a valid event is tracked and long external strings are truncated', function () {
@@ -57,7 +59,25 @@ test('heartbeat updates one session without creating event rows', function () {
 
     expect(AnalyticsSession::query()->count())->toBe(1)
         ->and(AnalyticsSession::query()->value('duration_seconds'))->toBe(60)
+        ->and(AnalyticsSession::query()->value('is_engaged'))->toBeTrue()
+        ->and(AnalyticsSession::query()->value('is_bounce'))->toBeFalse()
         ->and(UserAnalytic::query()->count())->toBe(0);
+});
+
+test('engagement is always the inverse of bounce', function () {
+    $tracking = app(TrackingService::class);
+    $request = Request::create('/', 'POST');
+    $tracking->track($request, EventType::Visit, ['event_id' => 'inverse-visit'], sessionId: 'inverse-session');
+
+    $session = AnalyticsSession::query()->firstOrFail();
+    expect($session->is_engaged)->toBeFalse()
+        ->and($session->is_bounce)->toBeTrue();
+
+    $tracking->track($request, EventType::Intent, ['event_id' => 'inverse-intent'], sessionId: 'inverse-session');
+
+    $session->refresh();
+    expect($session->is_engaged)->toBeTrue()
+        ->and($session->is_bounce)->toBeFalse();
 });
 
 test('archive command moves expired telemetry and is idempotent', function () {

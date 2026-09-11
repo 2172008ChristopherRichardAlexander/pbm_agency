@@ -87,8 +87,10 @@ final class TrackingService
         $session = $this->baseSession($request, ['landing_source' => $landingSource]);
         $session->duration_seconds = max((int) $session->duration_seconds, $durationSeconds);
         $session->max_scroll_depth = max((int) $session->max_scroll_depth, $maxScrollDepth);
-        $session->is_engaged = $session->is_engaged || $durationSeconds >= (int) config('analytics.engagement_threshold');
-        $session->is_bounce = ! ($session->is_engaged || $session->max_scroll_depth > (int) config('analytics.scroll_bounce_threshold'));
+        $session->is_engaged = $this->wasEngaged($session)
+            || $durationSeconds >= (int) config('analytics.engagement_threshold')
+            || $session->max_scroll_depth > (int) config('analytics.scroll_bounce_threshold');
+        $session->is_bounce = ! $session->is_engaged;
         $session->last_seen_at = now();
         $session->save();
 
@@ -101,16 +103,22 @@ final class TrackingService
         $depth = min(100, max(0, (int) ($data['depth'] ?? 0)));
         $session->max_scroll_depth = max((int) $session->max_scroll_depth, $depth);
 
-        if ($event === EventType::Engagement) {
-            $session->is_engaged = true;
-        }
-
         $conversionSignal = $event->isFunnelEvent() && $event !== EventType::Visit;
-        $session->is_bounce = ! ($session->is_engaged || $conversionSignal || $session->max_scroll_depth > (int) config('analytics.scroll_bounce_threshold'));
+        $session->is_engaged = $this->wasEngaged($session)
+            || $event === EventType::Engagement
+            || $conversionSignal
+            || $session->max_scroll_depth > (int) config('analytics.scroll_bounce_threshold');
+        $session->is_bounce = ! $session->is_engaged;
         $session->last_seen_at = now();
         $session->save();
 
         return $session;
+    }
+
+    private function wasEngaged(AnalyticsSession $session): bool
+    {
+        return (bool) $session->is_engaged
+            || ($session->exists && ! (bool) $session->is_bounce);
     }
 
     private function baseSession(Request $request, array $data, ?string $sessionId = null, ?string $visitorId = null): AnalyticsSession

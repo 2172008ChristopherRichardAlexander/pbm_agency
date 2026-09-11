@@ -12,8 +12,8 @@ export function MetricCard({
     icon: LucideIcon;
 }) {
     return (
-        <div className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/30 p-6 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+        <div className="analytics-metric-card group relative overflow-hidden rounded-xl border border-border/50 bg-card/30 p-6 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
+            <div className="analytics-metric-glow absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
             <div className="relative flex items-start justify-between gap-4">
                 <div className="min-w-0 space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">
@@ -26,7 +26,7 @@ export function MetricCard({
                         {description}
                     </p>
                 </div>
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-110">
+                <div className="analytics-metric-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-110">
                     <Icon className="h-5 w-5" />
                 </div>
             </div>

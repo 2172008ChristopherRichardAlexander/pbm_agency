@@ -471,6 +471,203 @@
     --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* ================== Analytics workspace ================== */
+.analytics-workspace {
+    --background: oklch(0.135 0.028 264);
+    --foreground: oklch(0.96 0.012 250);
+    --card: oklch(0.18 0.032 263);
+    --card-foreground: oklch(0.96 0.012 250);
+    --popover: oklch(0.19 0.036 263);
+    --popover-foreground: oklch(0.96 0.012 250);
+    --primary: oklch(0.78 0.135 211);
+    --primary-foreground: oklch(0.13 0.025 264);
+    --secondary: oklch(0.23 0.04 263);
+    --secondary-foreground: oklch(0.94 0.015 250);
+    --muted: oklch(0.22 0.034 263);
+    --muted-foreground: oklch(0.72 0.035 252);
+    --accent: oklch(0.26 0.055 257);
+    --accent-foreground: oklch(0.97 0.01 250);
+    --border: oklch(0.31 0.046 261);
+    --input: oklch(0.27 0.045 261);
+    --ring: oklch(0.72 0.15 216);
+    --chart-1: oklch(0.74 0.15 221);
+    --chart-2: oklch(0.72 0.17 155);
+    --chart-3: oklch(0.76 0.17 75);
+    --chart-4: oklch(0.69 0.2 297);
+    --chart-5: oklch(0.68 0.2 18);
+    position: relative;
+    isolation: isolate;
+    color-scheme: dark;
+    background-color: var(--background);
+    background-image:
+        radial-gradient(
+            circle at 8% 0%,
+            oklch(0.63 0.16 224 / 0.12),
+            transparent 28rem
+        ),
+        radial-gradient(
+            circle at 92% 12%,
+            oklch(0.58 0.2 292 / 0.1),
+            transparent 32rem
+        ),
+        linear-gradient(oklch(0.17 0.03 263 / 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, oklch(0.17 0.03 263 / 0.5) 1px, transparent 1px);
+    background-size:
+        auto,
+        auto,
+        44px 44px,
+        44px 44px;
+}
+
+.analytics-workspace > * {
+    position: relative;
+    z-index: 1;
+}
+
+.analytics-header {
+    background: linear-gradient(
+        110deg,
+        oklch(0.18 0.04 263 / 0.94),
+        oklch(0.15 0.032 270 / 0.82)
+    );
+    box-shadow: 0 16px 44px -38px oklch(0.74 0.15 221 / 0.75);
+}
+
+.analytics-workspace [data-slot='card'],
+.analytics-panel,
+.analytics-metric-card {
+    border-color: oklch(0.48 0.09 240 / 0.28);
+    background: linear-gradient(
+        145deg,
+        oklch(0.205 0.04 262 / 0.94),
+        oklch(0.165 0.032 268 / 0.9)
+    );
+    box-shadow:
+        0 1px 0 oklch(0.9 0.08 220 / 0.04) inset,
+        0 20px 50px -36px oklch(0.04 0.03 270 / 0.9);
+}
+
+.analytics-workspace [data-slot='card'] {
+    border-radius: 1rem;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        transform 180ms ease;
+}
+
+.analytics-workspace [data-slot='card']:hover,
+.analytics-panel:hover {
+    border-color: oklch(0.65 0.13 227 / 0.42);
+    box-shadow:
+        0 1px 0 oklch(0.9 0.08 220 / 0.06) inset,
+        0 24px 60px -38px oklch(0.57 0.16 244 / 0.45);
+}
+
+.analytics-subpanel {
+    border-color: oklch(0.48 0.1 240 / 0.22);
+    background: linear-gradient(
+        135deg,
+        oklch(0.24 0.045 259 / 0.72),
+        oklch(0.18 0.032 268 / 0.7)
+    );
+    box-shadow: 0 1px 0 oklch(0.9 0.07 220 / 0.035) inset;
+}
+
+.analytics-metric-card {
+    --metric-accent: oklch(0.74 0.15 221);
+    min-height: 9.5rem;
+}
+
+.analytics-metric-card::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: linear-gradient(90deg, var(--metric-accent), transparent 72%);
+    opacity: 0.8;
+}
+
+.analytics-metric-glow {
+    background: radial-gradient(
+        circle at 88% 8%,
+        color-mix(in oklch, var(--metric-accent) 20%, transparent),
+        transparent 52%
+    );
+    opacity: 0.75;
+}
+
+.analytics-metric-icon {
+    color: var(--metric-accent);
+    background: color-mix(in oklch, var(--metric-accent) 13%, transparent);
+    box-shadow: 0 0 24px -10px var(--metric-accent);
+}
+
+.analytics-metrics-grid > :nth-child(4n + 2) {
+    --metric-accent: oklch(0.72 0.17 155);
+}
+
+.analytics-metrics-grid > :nth-child(4n + 3) {
+    --metric-accent: oklch(0.76 0.17 75);
+}
+
+.analytics-metrics-grid > :nth-child(4n + 4) {
+    --metric-accent: oklch(0.69 0.2 297);
+}
+
+.analytics-workspace table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.analytics-workspace thead tr {
+    background: oklch(0.24 0.045 261 / 0.68);
+}
+
+.analytics-workspace thead th:first-child {
+    border-radius: 0.65rem 0 0 0.65rem;
+}
+
+.analytics-workspace thead th:last-child {
+    border-radius: 0 0.65rem 0.65rem 0;
+}
+
+.analytics-workspace tbody tr {
+    transition:
+        background-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.analytics-workspace tbody tr:hover {
+    background: oklch(0.27 0.055 250 / 0.52);
+    box-shadow: 0 1px 0 oklch(0.68 0.13 222 / 0.12) inset;
+}
+
+.analytics-workspace [role='tablist'] {
+    border: 1px solid oklch(0.48 0.09 240 / 0.22);
+    background: oklch(0.17 0.035 266 / 0.72);
+    box-shadow: 0 8px 30px -24px oklch(0.65 0.14 225 / 0.45);
+}
+
+.analytics-workspace .recharts-cartesian-grid line {
+    stroke: oklch(0.5 0.06 250 / 0.2);
+}
+
+.analytics-workspace .recharts-default-legend {
+    color: var(--muted-foreground);
+}
+
+.analytics-workspace ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.analytics-workspace ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: oklch(0.55 0.1 235 / 0.45);
+    background-clip: padding-box;
+}
+
 @layer base {
     * {
         @apply border-border;

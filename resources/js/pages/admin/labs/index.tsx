@@ -136,7 +136,7 @@ export default function Labs(props: LabsPageProps) {
     return (
         <AdminLayout>
             <Head title="A/B Testing Labs" />
-            <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-6">
+            <div className="analytics-workspace min-h-screen w-full max-w-[1600px] space-y-8 p-4 md:p-6">
                 <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20">

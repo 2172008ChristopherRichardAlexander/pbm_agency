@@ -179,9 +179,9 @@ export default function Analytics(props: AnalyticsPageProps) {
     return (
         <AdminLayout>
             <Head title="Analytics" />
-            <div className="min-h-screen bg-background">
-                <header className="border-b border-border/50 bg-card/30 px-4 py-6 backdrop-blur-sm md:px-6 md:py-8">
-                    <div className="mx-auto flex max-w-7xl flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="analytics-workspace min-h-screen overflow-hidden bg-background">
+                <header className="analytics-header border-b border-border/50 bg-card/30 px-4 py-6 backdrop-blur-sm md:px-6 md:py-8">
+                    <div className="flex w-full max-w-[1600px] flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
                                 Analytics Dashboard
@@ -221,7 +221,7 @@ export default function Analytics(props: AnalyticsPageProps) {
                     </div>
                 </header>
 
-                <main className="mx-auto max-w-7xl space-y-8 p-4 md:p-6">
+                <main className="w-full max-w-[1600px] space-y-8 p-4 md:p-6">
                     <section>
                         <div className="mb-4">
                             <h2 className="text-lg font-semibold">
@@ -232,7 +232,7 @@ export default function Analytics(props: AnalyticsPageProps) {
                                 days.
                             </p>
                         </div>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+                        <div className="analytics-metrics-grid grid gap-4 md:grid-cols-2 lg:grid-cols-4 lg:gap-5">
                             {[...commonCards, ...modeCards].map((card) => (
                                 <MetricCard key={card.title} {...card} />
                             ))}
@@ -246,10 +246,10 @@ export default function Analytics(props: AnalyticsPageProps) {
 
                     <ConversionFunnel stages={props.funnel} />
 
-                    <section className="rounded-xl border border-border/50 bg-card/30 p-6 backdrop-blur-sm">
+                    <section className="analytics-panel rounded-xl border border-border/50 bg-card/30 p-6 backdrop-blur-sm">
                         <h2 className="text-lg font-semibold">Key Insights</h2>
                         <div className="mt-4 grid gap-4 md:grid-cols-3">
-                            <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
+                            <div className="analytics-subpanel rounded-lg border border-border/50 bg-muted/20 p-4">
                                 <p className="text-xs tracking-wide text-muted-foreground uppercase">
                                     Top Referral Source
                                 </p>
@@ -263,7 +263,7 @@ export default function Analytics(props: AnalyticsPageProps) {
                                     visits
                                 </p>
                             </div>
-                            <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
+                            <div className="analytics-subpanel rounded-lg border border-border/50 bg-muted/20 p-4">
                                 <p className="text-xs tracking-wide text-muted-foreground uppercase">
                                     {props.mode === 'ctwa'
                                         ? 'Primary CTWA Channel'
@@ -283,7 +283,7 @@ export default function Analytics(props: AnalyticsPageProps) {
                                         : 'Total Lead ÷ Visit'}
                                 </p>
                             </div>
-                            <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
+                            <div className="analytics-subpanel rounded-lg border border-border/50 bg-muted/20 p-4">
                                 <p className="text-xs tracking-wide text-muted-foreground uppercase">
                                     {tracking.capabilities.revenue
                                         ? 'Revenue per Visit'

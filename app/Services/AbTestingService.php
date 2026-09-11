@@ -43,7 +43,7 @@ class AbTestingService
     private function performance(array $sources, CarbonImmutable $from, CarbonImmutable $to, ?string $referralSource): array
     {
         $counts = $this->eventCounts($from, $to, $referralSource);
-        $bounces = $this->sessionCounts($from, $to, $referralSource, true);
+        $engagedIds = $this->engagedSessionIdsBySource($from, $to, $referralSource);
         $leadIds = $this->leadIdsBySource($from, $to, $referralSource);
         $paymentStats = $this->paymentStatsBySource($from, $to, $referralSource);
         $result = [];
@@ -51,14 +51,16 @@ class AbTestingService
         foreach ($sources as $source) {
             $sourceCounts = $counts[$source] ?? [];
             $visits = $sourceCounts[EventType::Visit->value] ?? 0;
+            $engagements = min($visits, ($engagedIds[$source] ?? collect())->count());
+            $bounceCount = max(0, $visits - $engagements);
             $totalLeads = ($leadIds[$source] ?? collect())->count();
             $row = [
                 'source' => $source,
                 'visits' => $visits,
-                'engagements' => $sourceCounts[EventType::Engagement->value] ?? 0,
-                'engagement_rate' => $this->rate($sourceCounts[EventType::Engagement->value] ?? 0, $visits),
-                'bounces' => $bounces[$source] ?? 0,
-                'bounce_rate' => $this->rate($bounces[$source] ?? 0, $visits),
+                'engagements' => $engagements,
+                'engagement_rate' => $this->rate($engagements, $visits),
+                'bounces' => $bounceCount,
+                'bounce_rate' => $this->rate($bounceCount, $visits),
                 'intents' => $sourceCounts[EventType::Intent->value] ?? 0,
                 'intent_rate' => $this->rate($sourceCounts[EventType::Intent->value] ?? 0, $visits),
                 'total_leads' => $totalLeads,
@@ -100,11 +102,12 @@ class AbTestingService
     private function funnels(array $sources, CarbonImmutable $from, CarbonImmutable $to, ?string $referralSource): array
     {
         $events = $this->eventSessionIdsBySource($from, $to, $referralSource);
+        $engagedSessions = $this->engagedSessionIdsBySource($from, $to, $referralSource);
 
-        return collect($sources)->map(function (string $source) use ($events) {
+        return collect($sources)->map(function (string $source) use ($events, $engagedSessions) {
             $byEvent = $events[$source] ?? collect();
             $visits = collect($byEvent[EventType::Visit->value] ?? []);
-            $engaged = $visits->intersect($byEvent[EventType::Engagement->value] ?? []);
+            $engaged = $visits->intersect($engagedSessions[$source] ?? []);
             $intent = $engaged->intersect($byEvent[EventType::Intent->value] ?? []);
             $stages = [
                 $this->stage(EventType::Visit, $visits->count(), $visits->count(), null, null, 'main'),
@@ -402,18 +405,22 @@ class AbTestingService
             ->get();
     }
 
-    private function sessionCounts(CarbonImmutable $from, CarbonImmutable $to, ?string $referralSource, bool $bouncesOnly = false): array
+    private function engagedSessionIdsBySource(CarbonImmutable $from, CarbonImmutable $to, ?string $referralSource): Collection
     {
-        $query = DB::table('analytics_sessions')->whereBetween('started_at', [$from, $to]);
+        $query = DB::table('user_analytics as visits')
+            ->join('analytics_sessions as sessions', 'sessions.session_id', '=', 'visits.session_id')
+            ->where('visits.event_type', EventType::Visit->value)
+            ->whereBetween('visits.created_at', [$from, $to])
+            ->where('sessions.is_bounce', false);
         if ($referralSource) {
-            $query->where('referral_source', $referralSource);
-        }
-        if ($bouncesOnly) {
-            $query->where('is_bounce', true);
+            $query->where('sessions.referral_source', $referralSource);
         }
 
-        return $query->selectRaw("COALESCE(NULLIF(landing_source, ''), '/') AS source, COUNT(DISTINCT session_id) AS total")
-            ->groupBy('landing_source')->pluck('total', 'source')->map(fn ($value) => (int) $value)->all();
+        return $query
+            ->selectRaw("COALESCE(NULLIF(visits.landing_source, ''), '/') AS source, visits.session_id")
+            ->get()
+            ->groupBy('source')
+            ->map(fn (Collection $rows) => $rows->pluck('session_id')->unique()->values());
     }
 
     private function filterReferral(Builder $query, ?string $referralSource): void

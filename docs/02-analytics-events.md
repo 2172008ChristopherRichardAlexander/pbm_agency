@@ -30,7 +30,8 @@ Supporting event tidak menjadi tahap funnel, tetapi wajib untuk analisis.
 
 Metrik berikut **tidak mempunyai event pasangan**. Jangan mencari atau membuat event bernama `bounce`, `total_lead`, `lead_cr`, `sales_cr`, `revenue`, atau `rpv`.
 
-- Bounce: visit tanpa engagement/intent/lead/payment dan tanpa scroll di atas 25%.
+- Engagement: seluruh visit yang tidak berstatus bounce. Engagement Rate selalu merupakan negasi Bounce Rate.
+- Bounce: visit tanpa durasi aktif minimum, intent, aksi funnel, atau scroll di atas 25%.
 - Total Lead CTWA: distinct session dari gabungan Whatsapp Lead dan Direct Checkout.
 - Total Lead FORM: sama dengan Lead, sehingga card Total Lead disembunyikan.
 - Lead CR: Total Lead dibagi Visit.

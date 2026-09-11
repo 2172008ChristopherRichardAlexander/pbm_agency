@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Analytics\EventType;
-use App\Models\AnalyticsSession;
 use App\Models\UserAnalytic;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,13 +15,11 @@ class AnalyticsMetricsService
     {
         $mode = (string) config('analytics.mode');
         $counts = $this->eventCounts($from, $to);
-        $visits = $counts[EventType::Visit->value] ?? 0;
-        $engagements = $counts[EventType::Engagement->value] ?? 0;
+        $visitIds = $this->eventSessionIds($from, $to, EventType::Visit);
+        $visits = $visitIds->count();
+        $engagements = $this->engagedSessionIds($from, $to)->count();
         $intents = $counts[EventType::Intent->value] ?? 0;
-        $bounces = AnalyticsSession::query()
-            ->whereBetween('started_at', [$from, $to])
-            ->where('is_bounce', true)
-            ->count();
+        $bounces = max(0, $visits - $engagements);
         $totalLeads = count($this->leadSessionIds($from, $to));
         $payments = $this->successfulPayments($from, $to)
             ->distinct('session_id')
@@ -134,6 +131,14 @@ class AnalyticsMetricsService
             ->selectRaw('DATE(created_at) AS date, COUNT(DISTINCT session_id) AS total')
             ->groupByRaw('DATE(created_at)')
             ->pluck('total', 'date');
+        $engagementRows = DB::table('user_analytics as events')
+            ->join('analytics_sessions as sessions', 'sessions.session_id', '=', 'events.session_id')
+            ->where('events.event_type', EventType::Visit->value)
+            ->where('sessions.is_bounce', false)
+            ->whereBetween('events.created_at', [$from, $to])
+            ->selectRaw('DATE(events.created_at) AS date, COUNT(DISTINCT events.session_id) AS total')
+            ->groupByRaw('DATE(events.created_at)')
+            ->pluck('total', 'date');
 
         $result = [];
         for ($date = $from->startOfDay(); $date->lte($to); $date = $date->addDay()) {
@@ -145,6 +150,7 @@ class AnalyticsMetricsService
             foreach ($rows->get($key, collect()) as $row) {
                 $item[$row->event_type] = (int) $row->total;
             }
+            $item[EventType::Engagement->value] = (int) ($engagementRows[$key] ?? 0);
             $item['total_lead'] = (int) ($leadRows[$key] ?? 0);
             $result[] = $item;
         }
@@ -169,7 +175,7 @@ class AnalyticsMetricsService
     private function hierarchicalFunnel(CarbonImmutable $from, CarbonImmutable $to): array
     {
         $visitIds = $this->eventSessionIds($from, $to, EventType::Visit);
-        $engagedIds = $visitIds->intersect($this->eventSessionIds($from, $to, EventType::Engagement));
+        $engagedIds = $visitIds->intersect($this->engagedSessionIds($from, $to));
         $intentIds = $engagedIds->intersect($this->eventSessionIds($from, $to, EventType::Intent));
         $stages = [
             $this->stage(EventType::Visit, $visitIds->count(), $visitIds->count(), null, null, 'main'),
@@ -237,6 +243,17 @@ class AnalyticsMetricsService
             : UserAnalytic::query()->where('event_type', $event)->whereBetween('created_at', [$from, $to]);
 
         return $query->distinct()->pluck('session_id');
+    }
+
+    private function engagedSessionIds(CarbonImmutable $from, CarbonImmutable $to): Collection
+    {
+        return DB::table('user_analytics as visits')
+            ->join('analytics_sessions as sessions', 'sessions.session_id', '=', 'visits.session_id')
+            ->where('visits.event_type', EventType::Visit->value)
+            ->whereBetween('visits.created_at', [$from, $to])
+            ->where('sessions.is_bounce', false)
+            ->distinct()
+            ->pluck('visits.session_id');
     }
 
     private function rate(int|float $value, int|float $base): float

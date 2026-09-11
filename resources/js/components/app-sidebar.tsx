@@ -68,7 +68,11 @@ export function AppSidebar() {
     ];
 
     return (
-        <Sidebar collapsible="icon" variant="sidebar">
+        <Sidebar
+            collapsible="icon"
+            variant="sidebar"
+            className="border-r border-cyan-400/10 bg-sidebar/95 shadow-[12px_0_40px_-28px_rgba(34,211,238,0.45)] backdrop-blur-xl"
+        >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

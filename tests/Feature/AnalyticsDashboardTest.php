@@ -50,6 +50,46 @@ test('ctwa total lead counts a session once across both lead actions', function 
     expect($report['stats']['total_leads'])->toBe(1);
 });
 
+test('dashboard engagement is the exact inverse of bounce', function () {
+    config()->set('analytics.mode', 'ctwa');
+
+    foreach (['engaged', 'quick-action'] as $session) {
+        dashboardSession($session);
+        dashboardEvent($session, EventType::Visit);
+    }
+
+    AnalyticsSession::query()->create([
+        'session_id' => 'bounce',
+        'landing_source' => '/test',
+        'device_type' => 'desktop',
+        'duration_seconds' => 4,
+        'max_scroll_depth' => 10,
+        'is_engaged' => false,
+        'is_bounce' => true,
+        'started_at' => now(),
+        'last_seen_at' => now(),
+    ]);
+    dashboardEvent('bounce', EventType::Visit);
+    dashboardEvent('quick-action', EventType::Intent);
+
+    $from = CarbonImmutable::now()->startOfDay();
+    $to = CarbonImmutable::now()->endOfDay();
+    $dashboard = app(AnalyticsMetricsService::class)->dashboard($from, $to);
+    $labs = app(AbTestingService::class)->report($from, $to);
+
+    expect($dashboard['stats'])
+        ->visits->toBe(3)
+        ->engagements->toBe(2)
+        ->bounces->toBe(1)
+        ->engagement_rate->toBe(66.67)
+        ->bounce_rate->toBe(33.33)
+        ->and($dashboard['daily'][0][EventType::Engagement->value])->toBe(2)
+        ->and($dashboard['stats']['engagement_rate'] + $dashboard['stats']['bounce_rate'])->toBe(100.0)
+        ->and($labs['performance'][0]['engagements'])->toBe(2)
+        ->and($labs['performance'][0]['bounces'])->toBe(1)
+        ->and($labs['performance'][0]['engagement_rate'] + $labs['performance'][0]['bounce_rate'])->toBe(100.0);
+});
+
 test('split funnel is hierarchical', function () {
     config()->set('analytics.mode', 'ctwa');
     foreach (['one', 'two'] as $session) {
